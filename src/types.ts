@@ -48,6 +48,7 @@ export interface DeepAnalysis {
     operationalIntegrity: string;
   };
   conclusion: string;
+  narrativeReport: string;
 }
 
 export interface PlanAnalysis {
@@ -62,4 +63,5 @@ export interface PlanAnalysis {
   };
   compliance: string;
   conclusion: string;
+  narrativeReport: string;
 }

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef } from "react";
 import { Search, FileText, BarChart2, ExternalLink, Loader2, ChevronRight, Info, Upload, X, FileUp, Database, AlertCircle, LayoutDashboard, PieChart, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Papa from "papaparse";
+import Markdown from "react-markdown";
 import { FILINGS_DATA } from "./data/filings";
 import { PlanData, PlanAnalysis, DeepAnalysis } from "./types";
 import { analyzePlan, deepAnalyzePlan } from "./services/geminiService";
@@ -21,6 +22,7 @@ export default function App() {
   const [ocrText, setOcrText] = useState("");
   const [showDeepAnalysisInput, setShowDeepAnalysisInput] = useState(false);
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
+  const [hasRequestedAnalysis, setHasRequestedAnalysis] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,15 +90,23 @@ export default function App() {
     setAnalysis(null);
     setDeepAnalysis(null);
     setShowDeepAnalysisInput(false);
+    setIsAnalyzing(false);
+    setHasRequestedAnalysis(false);
+  };
+
+  const handleGenerateAnalysis = async () => {
+    if (!selectedPlan) return;
+    
     setIsAnalyzing(true);
+    setHasRequestedAnalysis(true);
     
     const result = await analyzePlan(
-      plan.planName,
-      plan.sponsorName,
-      plan.planYear,
-      plan.participantsEoy,
-      plan.assets,
-      plan.assetsBoy
+      selectedPlan.planName,
+      selectedPlan.sponsorName,
+      selectedPlan.planYear,
+      selectedPlan.participantsEoy,
+      selectedPlan.assets,
+      selectedPlan.assetsBoy
     );
     
     setAnalysis(result);
@@ -496,6 +506,15 @@ export default function App() {
                           <p className="text-emerald-900 leading-relaxed font-medium">{deepAnalysis?.conclusion || "No conclusion provided."}</p>
                         </div>
                       </div>
+
+                      {deepAnalysis?.narrativeReport && (
+                        <div className="pt-8 border-t border-slate-100">
+                          <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Narrative Analysis</h4>
+                          <div className="prose prose-slate max-w-none prose-sm prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-strong:text-slate-900 prose-strong:block prose-strong:mt-4 prose-strong:mb-2 prose-strong:text-sm">
+                            <Markdown>{deepAnalysis.narrativeReport}</Markdown>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -508,12 +527,22 @@ export default function App() {
                         <BarChart2 className="w-5 h-5" />
                         <h3 className="font-semibold">Automated Financial Summary</h3>
                       </div>
-                      {isAnalyzing && (
-                        <div className="flex items-center gap-2 text-slate-300 text-xs">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          Analyzing...
-                        </div>
-                      )}
+                      <div className="flex items-center gap-3">
+                        {isAnalyzing && (
+                          <div className="flex items-center gap-2 text-slate-300 text-xs">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Analyzing...
+                          </div>
+                        )}
+                        {!hasRequestedAnalysis && !isAnalyzing && (
+                          <button
+                            onClick={handleGenerateAnalysis}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
+                          >
+                            Generate Summary
+                          </button>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="p-6">
@@ -522,6 +551,18 @@ export default function App() {
                           <div className="h-4 bg-slate-100 rounded w-3/4"></div>
                           <div className="h-4 bg-slate-100 rounded w-1/2"></div>
                           <div className="h-24 bg-slate-50 rounded"></div>
+                        </div>
+                      ) : !hasRequestedAnalysis ? (
+                        <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                          <BarChart2 className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                          <p className="text-sm text-slate-500 font-medium">Analysis Ready</p>
+                          <p className="text-xs text-slate-400 mt-1 mb-6">Click the button above to generate a professional summary of this filing.</p>
+                          <button
+                            onClick={handleGenerateAnalysis}
+                            className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-all active:scale-95"
+                          >
+                            Generate Summary
+                          </button>
                         </div>
                       ) : analysis ? (
                         <div className="space-y-8">
@@ -562,6 +603,15 @@ export default function App() {
                             <h4 className="text-emerald-800 font-bold text-xs uppercase tracking-widest mb-2">Conclusion</h4>
                             <p className="text-emerald-900 leading-relaxed">{analysis?.conclusion || "No conclusion provided."}</p>
                           </div>
+
+                          {analysis?.narrativeReport && (
+                            <div className="pt-6 border-t border-slate-100">
+                              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Narrative Summary</h4>
+                              <div className="prose prose-slate max-w-none prose-sm prose-p:leading-relaxed prose-strong:text-slate-900 prose-strong:block prose-strong:mt-4 prose-strong:mb-2 prose-strong:text-sm">
+                                <Markdown>{analysis.narrativeReport}</Markdown>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-12">
