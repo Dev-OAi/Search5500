@@ -1,0 +1,5 @@
+{
+  "name": "Form 5500 Analyzer",
+  "description": "Search and analyze Form 5500 series returns and reports for employee benefit plans.",
+  "requestFramePermissions": []
+}
