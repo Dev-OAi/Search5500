@@ -13,6 +13,26 @@ import { Header } from "./components/Header";
 
 export default function App() {
   const [localFilings, setLocalFilings] = useState<PlanData[]>(FILINGS_DATA);
+
+  const lastUpdated = useMemo(() => {
+    // @ts-ignore
+    import.meta.hot; // dummy to trigger re-render if needed in dev
+    const dateStr = (FILINGS_DATA as any).lastUpdated;
+    if (!dateStr) return null;
+
+    const date = new Date(dateStr);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+
+    return `${month}-${day}-${year} ${hours}:${minutes} ${ampm}`;
+  }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [zipFilter, setZipFilter] = useState("33432");
   const [yearFilter, setYearFilter] = useState("");
@@ -26,6 +46,16 @@ export default function App() {
   const [showDeepAnalysisInput, setShowDeepAnalysisInput] = useState(false);
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   const [hasRequestedAnalysis, setHasRequestedAnalysis] = useState(false);
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
   const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
