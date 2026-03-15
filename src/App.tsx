@@ -47,25 +47,8 @@ export default function App() {
   const [ocrText, setOcrText] = useState("");
   const [showDeepAnalysisInput, setShowDeepAnalysisInput] = useState(false);
   const [hasRequestedAnalysis, setHasRequestedAnalysis] = useState(false);
-  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
-  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
-  const [showKeyInput, setShowKeyInput] = useState(false);
 
-  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
-  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
-  const [showKeyInput, setShowKeyInput] = useState(false);
-
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
-
-  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
-  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
-  const [showKeyInput, setShowKeyInput] = useState(false);
-
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
-
-  // Settings & Navigation State
+  // Settings & Navigation State (CLEANED - Only one set of declarations)
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
   const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
   const [showKeyInput, setShowKeyInput] = useState(false);
@@ -84,14 +67,14 @@ export default function App() {
 
   const filteredFilings = useMemo(() => {
     return localFilings.filter((f) => {
-      const matchesSearch =
+      const matchesSearch = 
         f.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         f.sponsorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         f.ein.includes(searchTerm);
-
+      
       const matchesZip = zipFilter ? f.zip.includes(zipFilter) : true;
       const matchesYear = yearFilter ? f.planYear === yearFilter : true;
-
+      
       return matchesSearch && matchesZip && matchesYear;
     });
   }, [localFilings, searchTerm, zipFilter, yearFilter]);
