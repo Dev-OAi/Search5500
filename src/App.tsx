@@ -6,10 +6,31 @@ import Markdown from "react-markdown";
 import { FILINGS_DATA } from "./data/filings";
 import { PlanData, PlanAnalysis, DeepAnalysis } from "./types";
 import { analyzePlan, deepAnalyzePlan } from "./services/geminiService";
+import { performLocalAnalysis } from "./services/localAnalysisService";
 import { Dashboard } from "./components/Dashboard";
 
 export default function App() {
   const [localFilings, setLocalFilings] = useState<PlanData[]>(FILINGS_DATA);
+
+  const lastUpdated = useMemo(() => {
+    // @ts-ignore
+    import.meta.hot; // dummy to trigger re-render if needed in dev
+    const dateStr = (FILINGS_DATA as any).lastUpdated;
+    if (!dateStr) return null;
+
+    const date = new Date(dateStr);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+
+    return `${month}-${day}-${year} ${hours}:${minutes} ${ampm}`;
+  }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [zipFilter, setZipFilter] = useState("33432");
   const [yearFilter, setYearFilter] = useState("");
@@ -23,8 +44,19 @@ export default function App() {
   const [showDeepAnalysisInput, setShowDeepAnalysisInput] = useState(false);
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   const [hasRequestedAnalysis, setHasRequestedAnalysis] = useState(false);
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const saveAiSettings = (key: string, enabled: boolean) => {
+    setApiKey(key);
+    setAiEnabled(enabled);
+    localStorage.setItem("gemini_api_key", key);
+    localStorage.setItem("ai_enabled", enabled.toString());
+    setShowKeyInput(false);
+  };
 
   const filteredFilings = useMemo(() => {
     return localFilings.filter(
@@ -50,27 +82,34 @@ export default function App() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const parsedData: PlanData[] = results.data.map((row: any) => ({
-          ackId: row["Ack ID"] || row["ackId"] || "",
-          ein: row["EIN"] || row["ein"] || "",
-          pn: row["PN"] || row["pn"] || "",
-          planName: row["Plan Name"] || row["planName"] || "",
-          sponsorName: row["Sponsor Name"] || row["sponsorName"] || "",
-          address: row["Address"] || row["address"] || "",
-          city: row["City"] || row["city"] || "",
-          state: row["State"] || row["state"] || "",
-          zip: row["Zip"] || row["zip"] || "",
-          dateReceived: row["Date Received"] || row["dateReceived"] || "",
-          planCodes: row["Plan Codes"] || row["planCodes"] || "",
-          planType: row["Plan Type"] || row["planType"] || "",
-          planYear: row["Plan Year"] || row["planYear"] || "",
-          participants: parseInt(row["Participants"] || row["participants"] || "0"),
-          participantsEoy: parseInt(row["Participants EOY"] || row["participantsEoy"] || "0"),
-          assetsBoy: parseInt(row["Assets BOY"] || row["assetsBoy"] || "0"),
-          assets: parseInt(row["Assets"] || row["assets"] || "0"),
-          link: row["Link"] || row["link"] || ""
-        }));
+        const parsedData: PlanData[] = results.data
+          .filter((row: any) => row["Ack ID"] || row["ackId"])
+          .map((row: any) => ({
+            ackId: row["Ack ID"] || row["ackId"] || "",
+            ein: row["EIN"] || row["ein"] || "",
+            pn: row["PN"] || row["pn"] || "",
+            planName: row["Plan Name"] || row["planName"] || "",
+            sponsorName: row["Sponsor Name"] || row["sponsorName"] || "",
+            address: row["Address"] || row["address"] || "",
+            city: row["City"] || row["city"] || "",
+            state: row["State"] || row["state"] || "",
+            zip: row["Zip"] || row["zip"] || "",
+            dateReceived: row["Date Received"] || row["dateReceived"] || "",
+            planCodes: row["Plan Codes"] || row["planCodes"] || "",
+            planType: row["Plan Type"] || row["planType"] || "",
+            planYear: row["Plan Year"] || row["planYear"] || "",
+            participants: parseInt(row["Participants"] || row["participants"] || row["Participants End of Year"] || "0"),
+            participantsEoy: parseInt(row["Participants EOY"] || row["participantsEoy"] || row["Participants End of Year"] || "0"),
+            assetsBoy: parseInt(row["Assets BOY"] || row["assetsBoy"] || row["Net Assets Beginning of Year"] || "0"),
+            assets: parseInt(row["Assets"] || row["assets"] || row["Net Assets End of Year"] || "0"),
+            link: row["Link"] || row["link"] || ""
+          }));
         
+        if (parsedData.length === 0) {
+          alert("No valid filing data found in CSV. Please ensure it has the correct headers (e.g., 'Ack ID', 'Plan Name').");
+          return;
+        }
+
         setLocalFilings((prev) => [...parsedData, ...prev]);
         // Deduplicate by Ack ID
         setLocalFilings((prev) => {
@@ -87,7 +126,7 @@ export default function App() {
 
   const handleSelectPlan = async (plan: PlanData) => {
     setSelectedPlan(plan);
-    setAnalysis(null);
+    setAnalysis(performLocalAnalysis(plan));
     setDeepAnalysis(null);
     setShowDeepAnalysisInput(false);
     setIsAnalyzing(false);
@@ -95,12 +134,13 @@ export default function App() {
   };
 
   const handleGenerateAnalysis = async () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan || !apiKey || !aiEnabled) return;
     
     setIsAnalyzing(true);
     setHasRequestedAnalysis(true);
     
     const result = await analyzePlan(
+      apiKey,
       selectedPlan.planName,
       selectedPlan.sponsorName,
       selectedPlan.planYear,
@@ -109,14 +149,16 @@ export default function App() {
       selectedPlan.assetsBoy
     );
     
-    setAnalysis(result);
+    if (result) {
+      setAnalysis(result);
+    }
     setIsAnalyzing(false);
   };
 
   const handleDeepAnalysis = async () => {
-    if (!ocrText.trim()) return;
+    if (!ocrText.trim() || !apiKey || !aiEnabled) return;
     setIsDeepAnalyzing(true);
-    const result = await deepAnalyzePlan(ocrText);
+    const result = await deepAnalyzePlan(apiKey, ocrText);
     setDeepAnalysis(result);
     setIsDeepAnalyzing(false);
   };
@@ -130,7 +172,14 @@ export default function App() {
             <div className="bg-emerald-600 p-1.5 rounded-lg">
               <FileText className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-semibold tracking-tight hidden sm:block">Form 5500 Analyzer</h1>
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight hidden sm:block">Form 5500 Analyzer</h1>
+              {lastUpdated && (
+                <p className="text-[10px] text-slate-400 font-medium hidden md:block">
+                  Database Updated: {lastUpdated}
+                </p>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-3 flex-1 max-w-2xl mx-8">
@@ -157,6 +206,13 @@ export default function App() {
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setShowKeyInput(!showKeyInput)}
+              className={`p-2 rounded-full transition-colors ${apiKey && aiEnabled ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 bg-slate-100'}`}
+              title="Settings"
+            >
+              <Database className="w-5 h-5" />
+            </button>
+            <button
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors"
             >
@@ -173,6 +229,85 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {/* API Key Modal */}
+      <AnimatePresence>
+        {showKeyInput && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full relative"
+            >
+              <button
+                onClick={() => setShowKeyInput(false)}
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-emerald-600 p-2 rounded-xl">
+                  <Database className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold">AI Analysis Settings</h3>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div>
+                    <p className="text-sm font-bold">Enable AI Features</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Powered by Gemini</p>
+                  </div>
+                  <button
+                    onClick={() => setAiEnabled(!aiEnabled)}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${aiEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                  >
+                    <motion.div
+                      animate={{ x: aiEnabled ? 24 : 4 }}
+                      className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                    />
+                  </button>
+                </div>
+
+                <div className={aiEnabled ? "opacity-100" : "opacity-40 pointer-events-none"}>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Gemini API Key
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Paste your key here..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                  />
+                  <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
+                    Advanced AI allows for **Deep Analysis** of PDF text and more natural **Financial Summaries**. Your key is stored locally and never sent to our servers.
+                  </p>
+                </div>
+
+                <div className="pt-2 flex gap-3">
+                  <button
+                    onClick={() => saveAiSettings(apiKey, aiEnabled)}
+                    className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors"
+                  >
+                    Save Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      saveAiSettings("", false);
+                    }}
+                    className="px-4 py-3 text-slate-500 text-sm font-medium hover:text-red-600 transition-colors"
+                  >
+                    Clear & Disable
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Sidebar: List of Filings */}
@@ -525,7 +660,9 @@ export default function App() {
                     <div className="bg-slate-800 px-6 py-4 flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white">
                         <BarChart2 className="w-5 h-5" />
-                        <h3 className="font-semibold">Automated Financial Summary</h3>
+                      <h3 className="font-semibold">
+                        {hasRequestedAnalysis ? "AI Financial Summary" : "Local Financial Summary"}
+                      </h3>
                       </div>
                       <div className="flex items-center gap-3">
                         {isAnalyzing && (
@@ -536,10 +673,10 @@ export default function App() {
                         )}
                         {!hasRequestedAnalysis && !isAnalyzing && (
                           <button
-                            onClick={handleGenerateAnalysis}
+                          onClick={apiKey && aiEnabled ? handleGenerateAnalysis : () => setShowKeyInput(true)}
                             className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                           >
-                            Generate Summary
+                          {apiKey && aiEnabled ? "Upgrade with AI" : "Enable AI Summary"}
                           </button>
                         )}
                       </div>
@@ -551,18 +688,6 @@ export default function App() {
                           <div className="h-4 bg-slate-100 rounded w-3/4"></div>
                           <div className="h-4 bg-slate-100 rounded w-1/2"></div>
                           <div className="h-24 bg-slate-50 rounded"></div>
-                        </div>
-                      ) : !hasRequestedAnalysis ? (
-                        <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                          <BarChart2 className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-                          <p className="text-sm text-slate-500 font-medium">Analysis Ready</p>
-                          <p className="text-xs text-slate-400 mt-1 mb-6">Click the button above to generate a professional summary of this filing.</p>
-                          <button
-                            onClick={handleGenerateAnalysis}
-                            className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-all active:scale-95"
-                          >
-                            Generate Summary
-                          </button>
                         </div>
                       ) : analysis ? (
                         <div className="space-y-8">
@@ -612,6 +737,18 @@ export default function App() {
                               </div>
                             </div>
                           )}
+                        </div>
+                      ) : !hasRequestedAnalysis ? (
+                        <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                          <BarChart2 className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                          <p className="text-sm text-slate-500 font-medium">Analysis Ready</p>
+                          <p className="text-xs text-slate-400 mt-1 mb-6">Click the button above to generate a professional summary of this filing.</p>
+                          <button
+                            onClick={apiKey && aiEnabled ? handleGenerateAnalysis : () => setShowKeyInput(true)}
+                            className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-all active:scale-95"
+                          >
+                            {apiKey && aiEnabled ? "Generate AI Summary" : "Enable AI Summary"}
+                          </button>
                         </div>
                       ) : (
                         <div className="text-center py-12">
