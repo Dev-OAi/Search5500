@@ -10,6 +10,7 @@ import { Dashboard } from "./components/Dashboard";
 import { Sidebar } from "./components/Sidebar";
 import { RightSidebar } from "./components/RightSidebar";
 import { Header } from "./components/Header";
+import { CompactFilingCard } from "./components/CompactFilingCard";
 
 export default function App() {
   const [localFilings, setLocalFilings] = useState<PlanData[]>(FILINGS_DATA);
@@ -55,30 +56,48 @@ export default function App() {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [rightSidebarWidth, setRightSidebarWidth] = useState(480);
-  const [isResizing, setIsResizing] = useState(false);
+  const [listPaneWidth, setListPaneWidth] = useState(400);
+  const [resizingRight, setResizingRight] = useState(false);
+  const [resizingList, setResizingList] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const startResizing = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    setIsResizing(true);
+  const startResizingRight = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setResizingRight(true);
+    e.preventDefault();
+  }, []);
+
+  const startResizingList = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setResizingList(true);
     e.preventDefault();
   }, []);
 
   const stopResizing = React.useCallback(() => {
-    setIsResizing(false);
+    setResizingRight(false);
+    setResizingList(false);
   }, []);
 
   const resize = React.useCallback(
     (e: MouseEvent | TouchEvent) => {
-      if (isResizing) {
+      if (resizingRight) {
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
         const newWidth = window.innerWidth - clientX;
         if (newWidth > 320 && newWidth < window.innerWidth * 0.8) {
           setRightSidebarWidth(newWidth);
         }
+      } else if (resizingList) {
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        // The list pane starts after the left sidebar (64px = 256px if open)
+        // Actually it's easier to use the mouse movement delta or just relative to window
+        // But let's assume left sidebar is static 256px when open on desktop
+        const sidebarWidth = isLeftSidebarOpen ? 256 : 0;
+        const newWidth = clientX - sidebarWidth;
+        if (newWidth > 280 && newWidth < window.innerWidth * 0.5) {
+          setListPaneWidth(newWidth);
+        }
       }
     },
-    [isResizing]
+    [resizingRight, resizingList, isLeftSidebarOpen]
   );
 
   React.useEffect(() => {
@@ -226,71 +245,54 @@ export default function App() {
           isRightSidebarOpen={isRightSidebarOpen}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <AnimatePresence mode="wait">
-            {activeTab === "dashboard" ? (
-              <motion.div
-                key="dashboard-view"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <Dashboard selectedPlan={selectedPlan} allPlans={filteredFilings} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="filings-list"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="max-w-5xl mx-auto space-y-4"
-              >
-                {filteredFilings.map((plan) => (
-                  <button
-                    key={plan.ackId}
-                    onClick={() => handleSelectPlan(plan)}
-                    className={`w-full text-left p-6 rounded-3xl border transition-all ${
-                      selectedPlan?.ackId === plan.ackId
-                        ? "bg-white border-emerald-500 shadow-xl ring-1 ring-emerald-500"
-                        : "bg-white border-slate-200 hover:border-emerald-300 hover:shadow-lg"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2">
-                         <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">EIN: {plan.ein}</span>
-                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
-                            {plan.planYear} Filing
-                         </span>
-                      </div>
-                      <ChevronRight className={`w-5 h-5 transition-transform ${selectedPlan?.ackId === plan.ackId ? "rotate-90 text-emerald-500" : "text-slate-300"}`} />
-                    </div>
-                    <h3 className="font-bold text-lg text-slate-900 mb-1">{plan.planName}</h3>
-                    <p className="text-sm text-slate-500 font-medium">{plan.sponsorName}</p>
-                    <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-50">
-                      <div className="flex gap-6">
-                        <div>
-                          <p className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">Net Assets</p>
-                          <p className="text-sm font-bold text-slate-700">${(plan.assets / 1000000).toFixed(2)}M</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">Participants</p>
-                          <p className="text-sm font-bold text-slate-700">{plan.participantsEoy.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+        <main className="flex-1 flex flex-col lg:flex-row min-w-0 overflow-hidden relative">
+          {/* Filings List Pane */}
+          <section
+            style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${listPaneWidth}px` : '100%' }}
+            className={`
+              flex-shrink-0 flex flex-col bg-white border-r border-slate-200 transition-all
+              ${resizingList ? 'select-none transition-none' : ''}
+              ${activeTab === 'dashboard' ? 'hidden lg:flex' : 'flex'}
+            `}
+          >
+            <div className="p-4 border-b border-slate-50 bg-slate-50/30 flex items-center justify-between">
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Search Results ({filteredFilings.length})</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+              {filteredFilings.map((plan) => (
+                <CompactFilingCard
+                  key={plan.ackId}
+                  plan={plan}
+                  isSelected={selectedPlan?.ackId === plan.ackId}
+                  onSelect={handleSelectPlan}
+                />
+              ))}
 
-                {filteredFilings.length === 0 && (
-                  <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                    <Database className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-slate-900">No filings found</h3>
-                    <p className="text-sm text-slate-500">Try adjusting your filters or search terms.</p>
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              {filteredFilings.length === 0 && (
+                <div className="text-center py-12 px-4">
+                  <Database className="w-8 h-8 text-slate-200 mx-auto mb-3" />
+                  <p className="text-xs text-slate-500 font-medium">No filings match your criteria.</p>
+                </div>
+              )}
+            </div>
+
+            {/* List Resize Handle */}
+            <div
+              onMouseDown={startResizingList}
+              onTouchStart={startResizingList}
+              className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-10 hidden lg:block"
+            />
+          </section>
+
+          {/* Dashboard Pane */}
+          <section className={`
+            flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar
+            ${activeTab === 'analysis' ? 'hidden lg:block' : 'block'}
+          `}>
+            <div className="max-w-6xl mx-auto p-4 md:p-8">
+              <Dashboard selectedPlan={selectedPlan} allPlans={filteredFilings} />
+            </div>
+          </section>
         </main>
       </div>
 
@@ -313,8 +315,8 @@ export default function App() {
         setOcrText={setOcrText}
         onOpenSettings={() => setShowKeyInput(true)}
         width={rightSidebarWidth}
-        onResizeStart={startResizing}
-        isResizing={isResizing}
+        onResizeStart={startResizingRight}
+        isResizing={resizingRight}
       />
 
       {/* Settings Modal */}
