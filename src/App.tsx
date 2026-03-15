@@ -54,8 +54,45 @@ export default function App() {
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(480);
+  const [isResizing, setIsResizing] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const startResizing = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setIsResizing(true);
+    e.preventDefault();
+  }, []);
+
+  const stopResizing = React.useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = React.useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      if (isResizing) {
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        const newWidth = window.innerWidth - clientX;
+        if (newWidth > 320 && newWidth < window.innerWidth * 0.8) {
+          setRightSidebarWidth(newWidth);
+        }
+      }
+    },
+    [isResizing]
+  );
+
+  React.useEffect(() => {
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+    window.addEventListener("touchmove", resize);
+    window.addEventListener("touchend", stopResizing);
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+      window.removeEventListener("touchmove", resize);
+      window.removeEventListener("touchend", stopResizing);
+    };
+  }, [resize, stopResizing]);
 
   const saveAiSettings = (key: string, enabled: boolean) => {
     setApiKey(key);
@@ -185,6 +222,8 @@ export default function App() {
           lastUpdated={lastUpdated}
           selectedPlan={selectedPlan}
           onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+          isLeftSidebarOpen={isLeftSidebarOpen}
+          isRightSidebarOpen={isRightSidebarOpen}
         />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
@@ -273,6 +312,9 @@ export default function App() {
         ocrText={ocrText}
         setOcrText={setOcrText}
         onOpenSettings={() => setShowKeyInput(true)}
+        width={rightSidebarWidth}
+        onResizeStart={startResizing}
+        isResizing={isResizing}
       />
 
       {/* Settings Modal */}
