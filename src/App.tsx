@@ -57,6 +57,13 @@ export default function App() {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const lastUpdated = useMemo(() => {
@@ -126,10 +133,15 @@ export default function App() {
             planType: row["Plan Type"] || row["planType"] || "",
             planYear: row["Plan Year"] || row["planYear"] || row["PLAN_YEAR"] || "",
             participants: parseInt(row["Participants"] || row["participants"] || row["TOT_PARTCP_CNT"] || "0"),
-            participantsEoy: parseInt(row["Participants EOY"] || row["participantsEoy"] || "0"),
-            assetsBoy: parseInt(row["Assets BOY"] || row["assetsBoy"] || row["TOT_ASSETS_BEG_AMT"] || "0"),
-            assets: parseInt(row["Assets"] || row["assets"] || row["TOT_ASSETS_END_AMT"] || "0"),
-            link: row["Link"] || row["link"] || ""
+            participantsEoy: parseInt(row["Participants EOY"] || row["participantsEoy"] || row["TOT_PARTCP_CNT"] || row["RTRE_PLAN_PARTCP_CNT"] || "0"),
+            assetsBoy: parseInt(row["Assets BOY"] || row["assetsBoy"] || row["TOT_ASSETS_BEG_AMT"] || row["NET_ASSETS_BEG_AMT"] || "0"),
+            assets: parseInt(row["Assets"] || row["assets"] || row["TOT_ASSETS_END_AMT"] || row["NET_ASSETS_END_AMT"] || "0"),
+            link: row["Link"] || row["link"] || "",
+            totalIncome: parseInt(row["TOT_INCOME_AMT"] || "0"),
+            totalExpenses: parseInt(row["TOT_EXPENSES_AMT"] || "0"),
+            netIncome: parseInt(row["NET_INCOME_AMT"] || "0"),
+            employerContributions: parseInt(row["EMPLOYER_CONTRB_AMT"] || "0"),
+            participantContributions: parseInt(row["PARTCP_CONTRB_AMT"] || "0")
           }));
         
         if (parsedData.length === 0) {
