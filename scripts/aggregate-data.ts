@@ -97,7 +97,12 @@ async function aggregate() {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(allPlans, null, 2));
+  const outputData = {
+    lastUpdated: new Date().toISOString(),
+    plans: allPlans
+  };
+
+  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(outputData, null, 2));
   console.log(`Successfully aggregated ${allPlans.length} filings to ${OUTPUT_FILE}`);
 }
 

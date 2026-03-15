@@ -286,7 +286,9 @@ const BOOTSTRAP_FILINGS: PlanData[] = [
 ];
 
 // Merge bootstrap data with external data from CSVs
-export const FILINGS_DATA: PlanData[] = [...BOOTSTRAP_FILINGS, ...(EXTERNAL_FILINGS as PlanData[])].reduce((acc, current) => {
+const externalPlans = Array.isArray(EXTERNAL_FILINGS) ? EXTERNAL_FILINGS : (EXTERNAL_FILINGS as any).plans || [];
+
+const mergedPlans = [...BOOTSTRAP_FILINGS, ...(externalPlans as PlanData[])].reduce((acc, current) => {
   const x = acc.find(item => item.ackId === current.ackId);
   if (!x) {
     return acc.concat([current]);
@@ -294,3 +296,7 @@ export const FILINGS_DATA: PlanData[] = [...BOOTSTRAP_FILINGS, ...(EXTERNAL_FILI
     return acc;
   }
 }, [] as PlanData[]);
+
+export const FILINGS_DATA = Object.assign(mergedPlans, {
+  lastUpdated: (EXTERNAL_FILINGS as any).lastUpdated
+});

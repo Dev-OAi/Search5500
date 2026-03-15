@@ -11,6 +11,26 @@ import { Dashboard } from "./components/Dashboard";
 
 export default function App() {
   const [localFilings, setLocalFilings] = useState<PlanData[]>(FILINGS_DATA);
+
+  const lastUpdated = useMemo(() => {
+    // @ts-ignore
+    import.meta.hot; // dummy to trigger re-render if needed in dev
+    const dateStr = (FILINGS_DATA as any).lastUpdated;
+    if (!dateStr) return null;
+
+    const date = new Date(dateStr);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+
+    return `${month}-${day}-${year} ${hours}:${minutes} ${ampm}`;
+  }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [zipFilter, setZipFilter] = useState("33432");
   const [yearFilter, setYearFilter] = useState("");
@@ -152,7 +172,14 @@ export default function App() {
             <div className="bg-emerald-600 p-1.5 rounded-lg">
               <FileText className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-semibold tracking-tight hidden sm:block">Form 5500 Analyzer</h1>
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight hidden sm:block">Form 5500 Analyzer</h1>
+              {lastUpdated && (
+                <p className="text-[10px] text-slate-400 font-medium hidden md:block">
+                  Database Updated: {lastUpdated}
+                </p>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-3 flex-1 max-w-2xl mx-8">
