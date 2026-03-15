@@ -47,6 +47,23 @@ export default function App() {
   const [ocrText, setOcrText] = useState("");
   const [showDeepAnalysisInput, setShowDeepAnalysisInput] = useState(false);
   const [hasRequestedAnalysis, setHasRequestedAnalysis] = useState(false);
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
   // Settings & Navigation State
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
