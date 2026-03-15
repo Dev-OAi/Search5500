@@ -25,13 +25,16 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   const [hasRequestedAnalysis, setHasRequestedAnalysis] = useState(false);
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
   const [showKeyInput, setShowKeyInput] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const saveApiKey = (key: string) => {
+  const saveAiSettings = (key: string, enabled: boolean) => {
     setApiKey(key);
+    setAiEnabled(enabled);
     localStorage.setItem("gemini_api_key", key);
+    localStorage.setItem("ai_enabled", enabled.toString());
     setShowKeyInput(false);
   };
 
@@ -111,7 +114,7 @@ export default function App() {
   };
 
   const handleGenerateAnalysis = async () => {
-    if (!selectedPlan || !apiKey) return;
+    if (!selectedPlan || !apiKey || !aiEnabled) return;
     
     setIsAnalyzing(true);
     setHasRequestedAnalysis(true);
@@ -133,7 +136,7 @@ export default function App() {
   };
 
   const handleDeepAnalysis = async () => {
-    if (!ocrText.trim() || !apiKey) return;
+    if (!ocrText.trim() || !apiKey || !aiEnabled) return;
     setIsDeepAnalyzing(true);
     const result = await deepAnalyzePlan(apiKey, ocrText);
     setDeepAnalysis(result);
@@ -177,7 +180,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowKeyInput(!showKeyInput)}
-              className={`p-2 rounded-full transition-colors ${apiKey ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 bg-slate-100'}`}
+              className={`p-2 rounded-full transition-colors ${apiKey && aiEnabled ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 bg-slate-100'}`}
               title="Settings"
             >
               <Database className="w-5 h-5" />
@@ -224,8 +227,24 @@ export default function App() {
                 <h3 className="text-xl font-bold">AI Analysis Settings</h3>
               </div>
 
-              <div className="space-y-4">
-                <div>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div>
+                    <p className="text-sm font-bold">Enable AI Features</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Powered by Gemini</p>
+                  </div>
+                  <button
+                    onClick={() => setAiEnabled(!aiEnabled)}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${aiEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                  >
+                    <motion.div
+                      animate={{ x: aiEnabled ? 24 : 4 }}
+                      className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                    />
+                  </button>
+                </div>
+
+                <div className={aiEnabled ? "opacity-100" : "opacity-40 pointer-events-none"}>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                     Gemini API Key
                   </label>
@@ -237,24 +256,24 @@ export default function App() {
                     onChange={(e) => setApiKey(e.target.value)}
                   />
                   <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
-                    Enter your Google Gemini API key to enable advanced AI-powered summaries. Your key is stored locally in your browser and never sent to our servers.
+                    Advanced AI allows for **Deep Analysis** of PDF text and more natural **Financial Summaries**. Your key is stored locally and never sent to our servers.
                   </p>
                 </div>
 
                 <div className="pt-2 flex gap-3">
                   <button
-                    onClick={() => saveApiKey(apiKey)}
+                    onClick={() => saveAiSettings(apiKey, aiEnabled)}
                     className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors"
                   >
-                    Save Key
+                    Save Settings
                   </button>
                   <button
                     onClick={() => {
-                      saveApiKey("");
+                      saveAiSettings("", false);
                     }}
                     className="px-4 py-3 text-slate-500 text-sm font-medium hover:text-red-600 transition-colors"
                   >
-                    Clear
+                    Clear & Disable
                   </button>
                 </div>
               </div>
@@ -627,10 +646,10 @@ export default function App() {
                         )}
                         {!hasRequestedAnalysis && !isAnalyzing && (
                           <button
-                          onClick={apiKey ? handleGenerateAnalysis : () => setShowKeyInput(true)}
+                          onClick={apiKey && aiEnabled ? handleGenerateAnalysis : () => setShowKeyInput(true)}
                             className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                           >
-                          {apiKey ? "Upgrade with AI" : "Add API Key for AI"}
+                          {apiKey && aiEnabled ? "Upgrade with AI" : "Enable AI Summary"}
                           </button>
                         )}
                       </div>
@@ -698,10 +717,10 @@ export default function App() {
                           <p className="text-sm text-slate-500 font-medium">Analysis Ready</p>
                           <p className="text-xs text-slate-400 mt-1 mb-6">Click the button above to generate a professional summary of this filing.</p>
                           <button
-                            onClick={apiKey ? handleGenerateAnalysis : () => setShowKeyInput(true)}
+                            onClick={apiKey && aiEnabled ? handleGenerateAnalysis : () => setShowKeyInput(true)}
                             className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-all active:scale-95"
                           >
-                            {apiKey ? "Generate AI Summary" : "Upgrade with AI Summary"}
+                            {apiKey && aiEnabled ? "Generate AI Summary" : "Enable AI Summary"}
                           </button>
                         </div>
                       ) : (
