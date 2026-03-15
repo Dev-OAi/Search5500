@@ -44,8 +44,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </AnimatePresence>
 
       <aside className={`
-        fixed lg:static inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        fixed lg:static inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}
       `}>
         <div className="flex flex-col h-full">
           <div className="p-6 flex items-center justify-between">

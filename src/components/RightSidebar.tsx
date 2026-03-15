@@ -22,6 +22,9 @@ interface RightSidebarProps {
   ocrText: string;
   setOcrText: (text: string) => void;
   onOpenSettings: () => void;
+  width: number;
+  onResizeStart: (e: React.MouseEvent | React.TouchEvent) => void;
+  isResizing: boolean;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -41,7 +44,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   setShowDeepAnalysisInput,
   ocrText,
   setOcrText,
-  onOpenSettings
+  onOpenSettings,
+  width,
+  onResizeStart,
+  isResizing
 }) => {
   if (!selectedPlan) return null;
 
@@ -59,10 +65,21 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         )}
       </AnimatePresence>
 
-      <aside className={`
-        fixed lg:static inset-y-0 right-0 bg-white border-l border-slate-200 w-full lg:w-[480px] xl:w-[560px] z-50 transition-transform duration-300 ease-in-out lg:translate-x-0
-        ${isOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'}
-      `}>
+      <aside
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${width}px` : '100%' }}
+        className={`
+          fixed lg:static inset-y-0 right-0 bg-white border-l border-slate-200 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0
+          ${isOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'}
+          ${isResizing ? 'select-none transition-none' : ''}
+        `}
+      >
+        {/* Resize Handle */}
+        <div
+          onMouseDown={onResizeStart}
+          onTouchStart={onResizeStart}
+          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-50 hidden lg:block"
+          title="Drag to resize"
+        />
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
             <div className="flex items-center gap-3">

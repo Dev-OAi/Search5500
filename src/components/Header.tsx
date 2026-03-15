@@ -10,6 +10,8 @@ interface HeaderProps {
   lastUpdated: string | null;
   selectedPlan: any;
   onToggleRightSidebar: () => void;
+  isLeftSidebarOpen: boolean;
+  isRightSidebarOpen: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,7 +21,9 @@ export const Header: React.FC<HeaderProps> = ({
   onUploadClick,
   lastUpdated,
   selectedPlan,
-  onToggleRightSidebar
+  onToggleRightSidebar,
+  isLeftSidebarOpen,
+  isRightSidebarOpen
 }) => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
@@ -27,7 +31,11 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="p-2 -ml-2 text-slate-500 hover:text-slate-900 lg:hidden"
+            className={`p-2 -ml-2 rounded-lg transition-colors ${
+              isLeftSidebarOpen
+                ? 'text-emerald-600 bg-emerald-50'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+            }`}
           >
             <Menu className="w-6 h-6" />
           </button>
@@ -71,19 +79,18 @@ export const Header: React.FC<HeaderProps> = ({
             <Upload className="w-5 h-5" />
           </button>
 
-          <AnimatePresence>
-            {selectedPlan && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                onClick={onToggleRightSidebar}
-                className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors lg:hidden"
-              >
-                <FileText className="w-5 h-5" />
-              </motion.button>
-            )}
-          </AnimatePresence>
+          <button
+            onClick={onToggleRightSidebar}
+            disabled={!selectedPlan}
+            className={`p-2 rounded-lg transition-colors ${
+              !selectedPlan ? 'opacity-0 pointer-events-none' :
+              isRightSidebarOpen
+                ? 'text-emerald-600 bg-emerald-50'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            <FileText className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </header>
