@@ -17,6 +17,12 @@ export interface PlanData {
   assetsBoy: number;
   assets: number;
   link: string;
+  // Financial details
+  totalIncome?: number;
+  totalExpenses?: number;
+  netIncome?: number;
+  employerContributions?: number;
+  participantContributions?: number;
 }
 
 export interface DeepAnalysis {
