@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
+    "dev": "npm run aggregate && vite --port=3000 --host=0.0.0.0",
+    "aggregate": "tsx scripts/aggregate-data.ts",
+    "build": "npm run aggregate && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
