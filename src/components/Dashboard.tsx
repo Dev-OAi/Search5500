@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { PlanData } from '../types';
 import { TrendingUp, Users, DollarSign, PieChart } from 'lucide-react';
+import { FilingModel } from '../models/FilingModel';
 
 interface DashboardProps {
   selectedPlan: PlanData | null;
@@ -12,18 +13,21 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans }) => {
-  // Data for trend charts (same EIN, different years)
+  // Data for trend charts (same EIN and PN, different years)
   const trendData = useMemo(() => {
     if (!selectedPlan) return [];
     return allPlans
-      .filter(p => p.ein === selectedPlan.ein)
+      .filter(p => p.ein === selectedPlan.ein && p.pn === selectedPlan.pn)
       .sort((a, b) => parseInt(a.planYear) - parseInt(b.planYear))
-      .map(p => ({
-        year: p.planYear,
-        assets: p.assets,
-        participants: p.participantsEoy,
-        growth: (((p.assets - p.assetsBoy) / (p.assetsBoy || 1)) * 100).toFixed(1)
-      }));
+      .map(p => {
+        const model = new FilingModel(p);
+        return {
+          year: model.year.toString(),
+          assets: model.assets,
+          participants: model.participants,
+          growth: model.assetGrowthRate.toFixed(1)
+        };
+      });
   }, [selectedPlan, allPlans]);
 
   // Data for comparison chart (top 5 plans by assets in current view)
