@@ -24,6 +24,11 @@ interface PlanData {
   assetsBoy: number;
   assets: number;
   link: string;
+  totalIncome?: number;
+  totalExpenses?: number;
+  netIncome?: number;
+  employerContributions?: number;
+  participantContributions?: number;
 }
 
 function getAllCsvFiles(dir: string): string[] {

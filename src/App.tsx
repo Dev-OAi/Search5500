@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Search, ChevronRight, Upload, X, Database, Loader2, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Papa from "papaparse";
@@ -14,9 +14,8 @@ import { Header } from "./components/Header";
 export default function App() {
   const [localFilings, setLocalFilings] = useState<PlanData[]>(FILINGS_DATA);
 
+  // Consolidated Metadata logic
   const lastUpdated = useMemo(() => {
-    // @ts-ignore
-    import.meta.hot; // dummy to trigger re-render if needed in dev
     const dateStr = (FILINGS_DATA as any).lastUpdated;
     if (!dateStr) return null;
 
@@ -28,15 +27,18 @@ export default function App() {
     let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours % 12 || 12;
 
     return `${month}-${day}-${year} ${hours}:${minutes} ${ampm}`;
   }, []);
+
+  // Filter & UI State
   const [searchTerm, setSearchTerm] = useState("");
   const [zipFilter, setZipFilter] = useState("33432");
   const [yearFilter, setYearFilter] = useState("");
+  const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   
+  // Selection & Analysis State
   const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
   const [analysis, setAnalysis] = useState<PlanAnalysis | null>(null);
   const [deepAnalysis, setDeepAnalysis] = useState<DeepAnalysis | null>(null);
@@ -44,7 +46,6 @@ export default function App() {
   const [isDeepAnalyzing, setIsDeepAnalyzing] = useState(false);
   const [ocrText, setOcrText] = useState("");
   const [showDeepAnalysisInput, setShowDeepAnalysisInput] = useState(false);
-  const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   const [hasRequestedAnalysis, setHasRequestedAnalysis] = useState(false);
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
   const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
@@ -64,25 +65,14 @@ export default function App() {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
+  // Settings & Navigation State
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem("gemini_api_key") || "");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(() => localStorage.getItem("ai_enabled") === "true");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const lastUpdated = useMemo(() => {
-    const dateStr = (FILINGS_DATA as any).lastUpdated;
-    if (!dateStr) return null;
-
-    const date = new Date(dateStr);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-
-    return `${month}-${day}-${year} ${hours}:${minutes} ${ampm}`;
-  }, []);
 
   const saveAiSettings = (key: string, enabled: boolean) => {
     setApiKey(key);
@@ -93,19 +83,17 @@ export default function App() {
   };
 
   const filteredFilings = useMemo(() => {
-    return localFilings.filter(
-      (f) => {
-        const matchesSearch = 
-          f.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          f.sponsorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          f.ein.includes(searchTerm);
-        
-        const matchesZip = zipFilter ? f.zip.includes(zipFilter) : true;
-        const matchesYear = yearFilter ? f.planYear === yearFilter : true;
-        
-        return matchesSearch && matchesZip && matchesYear;
-      }
-    );
+    return localFilings.filter((f) => {
+      const matchesSearch =
+        f.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        f.sponsorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        f.ein.includes(searchTerm);
+
+      const matchesZip = zipFilter ? f.zip.includes(zipFilter) : true;
+      const matchesYear = yearFilter ? f.planYear === yearFilter : true;
+
+      return matchesSearch && matchesZip && matchesYear;
+    });
   }, [localFilings, searchTerm, zipFilter, yearFilter]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -369,9 +357,7 @@ export default function App() {
                     Save Settings
                   </button>
                   <button
-                    onClick={() => {
-                      saveAiSettings("", false);
-                    }}
+                    onClick={() => saveAiSettings("", false)}
                     className="px-4 py-3 text-slate-500 text-sm font-medium hover:text-red-600 transition-colors"
                   >
                     Clear & Disable
