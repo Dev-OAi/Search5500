@@ -290,7 +290,12 @@ export default function App() {
             ${activeTab === 'analysis' ? 'hidden lg:block' : 'block'}
           `}>
             <div className="max-w-6xl mx-auto p-4 md:p-8">
-              <Dashboard selectedPlan={selectedPlan} allPlans={filteredFilings} />
+              <Dashboard
+                selectedPlan={selectedPlan}
+                allPlans={localFilings}
+                filteredPlans={filteredFilings}
+                onSelectYear={handleSelectPlan}
+              />
             </div>
           </section>
         </main>

@@ -9,20 +9,22 @@ import { FilingModel } from '../models/FilingModel';
 
 interface DashboardProps {
   selectedPlan: PlanData | null;
-  allPlans: PlanData[];
+  allPlans: PlanData[]; // Full database for history/trends
+  filteredPlans: PlanData[]; // Filtered set for Market Overview
+  onSelectYear: (plan: PlanData) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans, filteredPlans, onSelectYear }) => {
   // Global stats when no plan is selected
   const globalStats = useMemo(() => {
-    const totalAssets = allPlans.reduce((sum, p) => sum + p.assets, 0);
-    const totalParticipants = allPlans.reduce((sum, p) => sum + p.participantsEoy, 0);
-    const avgGrowth = allPlans.length > 0
-      ? allPlans.reduce((sum, p) => sum + (((p.assets - p.assetsBoy) / (p.assetsBoy || 1)) * 100), 0) / allPlans.length
+    const totalAssets = filteredPlans.reduce((sum, p) => sum + p.assets, 0);
+    const totalParticipants = filteredPlans.reduce((sum, p) => sum + p.participantsEoy, 0);
+    const avgGrowth = filteredPlans.length > 0
+      ? filteredPlans.reduce((sum, p) => sum + (((p.assets - p.assetsBoy) / (p.assetsBoy || 1)) * 100), 0) / filteredPlans.length
       : 0;
 
     // Group by year for global trend
-    const yearGroups = allPlans.reduce((acc: any, p) => {
+    const yearGroups = filteredPlans.reduce((acc: any, p) => {
       if (!acc[p.planYear]) acc[p.planYear] = { assets: 0, participants: 0, count: 0 };
       acc[p.planYear].assets += p.assets;
       acc[p.planYear].participants += p.participantsEoy;
@@ -38,7 +40,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans }) 
     }));
 
     return { totalAssets, totalParticipants, avgGrowth, globalTrend };
-  }, [allPlans]);
+  }, [filteredPlans]);
 
   // Data for trend charts (same EIN and PN, different years)
   const trendData = useMemo(() => {
@@ -69,7 +71,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans }) 
       }));
   }, [allPlans]);
 
-  if (!selectedPlan && allPlans.length === 0) return (
+  if (!selectedPlan && filteredPlans.length === 0) return (
     <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-200">
       <Globe className="w-12 h-12 text-slate-200 mx-auto mb-4" />
       <h3 className="text-lg font-bold text-slate-900">No Data Available</h3>
@@ -87,7 +89,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans }) 
           </div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">
             <Activity className="w-3.5 h-3.5" />
-            {allPlans.length} Total Filings
+            {filteredPlans.length} Total Filings
           </div>
         </div>
 
@@ -212,6 +214,75 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans }) 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Filing History Table */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:col-span-2">
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <FileText className="w-4 h-4 text-slate-600" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-800 uppercase tracking-tight">Filing History</h3>
+            </div>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
+              {trendData.length} Records Found
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/50">
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Year</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Assets</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Participants</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Growth</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {allPlans
+                  .filter(p => p.ein === selectedPlan.ein && p.pn === selectedPlan.pn)
+                  .sort((a, b) => parseInt(b.planYear) - parseInt(a.planYear))
+                  .map((p) => {
+                    const model = new FilingModel(p);
+                    const isCurrent = p.ackId === selectedPlan.ackId;
+                    return (
+                      <tr
+                        key={p.ackId}
+                        className={`group hover:bg-slate-50 transition-colors ${isCurrent ? 'bg-emerald-50/30' : ''}`}
+                      >
+                        <td className="px-6 py-4">
+                          <span className={`text-sm font-bold ${isCurrent ? 'text-emerald-700' : 'text-slate-700'}`}>
+                            {p.planYear}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-600 font-medium">${(p.assets / 1000000).toFixed(2)}M</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 font-medium">{p.participantsEoy.toLocaleString()}</td>
+                        <td className="px-6 py-4">
+                          <span className={`text-xs font-bold ${model.assetGrowthRate >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {model.assetGrowthRate.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            disabled={isCurrent}
+                            onClick={() => onSelectYear(p)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              isCurrent
+                                ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white'
+                            }`}
+                          >
+                            {isCurrent ? 'Viewing' : 'View Data'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
         {/* Asset Trend Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
