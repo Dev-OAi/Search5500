@@ -1,6 +1,8 @@
 import { PlanData } from "../types";
+// @ts-ignore - this file is generated at build time
+import EXTERNAL_FILINGS from "./external_filings.json";
 
-export const FILINGS_DATA: PlanData[] = [
+const BOOTSTRAP_FILINGS: PlanData[] = [
   {
     ackId: "20201002120828NAL0004439923001",
     ein: "592037664",
@@ -282,3 +284,13 @@ export const FILINGS_DATA: PlanData[] = [
     link: "https://efast2-filings-public.s3.amazonaws.com/prd/2022/10/15/20221015084450NAL0029048049001.pdf"
   }
 ];
+
+// Merge bootstrap data with external data from CSVs
+export const FILINGS_DATA: PlanData[] = [...BOOTSTRAP_FILINGS, ...(EXTERNAL_FILINGS as PlanData[])].reduce((acc, current) => {
+  const x = acc.find(item => item.ackId === current.ackId);
+  if (!x) {
+    return acc.concat([current]);
+  } else {
+    return acc;
+  }
+}, [] as PlanData[]);

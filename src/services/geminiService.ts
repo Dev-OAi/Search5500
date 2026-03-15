@@ -1,7 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
 /**
  * Attempts to repair a potentially truncated JSON string by adding missing closing braces/brackets.
  */
@@ -91,7 +89,8 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 5, initialDelay =
   throw lastError;
 }
 
-export async function analyzePlan(planName: string, sponsorName: string, year: string, participants: number, assets: number, assetsBoy: number) {
+export async function analyzePlan(apiKey: string, planName: string, sponsorName: string, year: string, participants: number, assets: number, assetsBoy: number) {
+  const ai = new GoogleGenAI({ apiKey });
   const prompt = `Analyze the following Form 5500 data and provide a brief, professional summary.
   Focus strictly on data points. DO NOT include legal disclaimers or repetitive boilerplate text.
   Keep each field concise (max 2-3 sentences).
@@ -176,7 +175,8 @@ export async function analyzePlan(planName: string, sponsorName: string, year: s
   }
 }
 
-export async function deepAnalyzePlan(ocrText: string) {
+export async function deepAnalyzePlan(apiKey: string, ocrText: string) {
+  const ai = new GoogleGenAI({ apiKey });
   // Truncate OCR text to avoid hitting token limits or causing response truncation
   const truncatedOcr = ocrText.slice(0, 30000);
 
