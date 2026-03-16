@@ -54,18 +54,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   return (
     <>
       <aside
-        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${width}px` : '85%' }}
+        style={{
+          width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${width}px` : '85%'
+        }}
         className={`
-          fixed lg:static inset-y-0 right-0 bg-white border-l border-slate-200 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0
-          ${isOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'}
+          fixed inset-y-0 right-0 bg-white border-l border-slate-200 z-[60] transition-transform duration-300 ease-in-out shadow-2xl
+          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
           ${isResizing ? 'select-none transition-none' : ''}
         `}
       >
-        {/* Resize Handle */}
+        {/* Resize Handle (Desktop Only) */}
         <div
           onMouseDown={onResizeStart}
           onTouchStart={onResizeStart}
-          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-50 hidden lg:block group/resize"
+          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-[70] hidden lg:block group/resize"
           title="Drag to resize"
         >
           {/* Visual Handle Tab */}
