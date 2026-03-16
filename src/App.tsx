@@ -11,6 +11,7 @@ import { Sidebar } from "./components/Sidebar";
 import { RightSidebar } from "./components/RightSidebar";
 import { Header } from "./components/Header";
 import { CompactFilingCard } from "./components/CompactFilingCard";
+import { ListActionHeader } from "./components/ListActionHeader";
 
 export default function App() {
   const [localFilings, setLocalFilings] = useState<PlanData[]>(FILINGS_DATA);
@@ -35,9 +36,16 @@ export default function App() {
 
   // Filter & UI State
   const [searchTerm, setSearchTerm] = useState("");
-  const [zipFilter, setZipFilter] = useState("33432");
+  const [zipFilter, setZipFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
+
+  const availableZips = useMemo(() => {
+    const zips = Array.from(new Set(localFilings.map(f => f.zip))).filter(Boolean).sort();
+    return zips;
+  }, [localFilings]);
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
+  const [sortBy, setSortBy] = useState<'year' | 'assets' | 'name'>('year');
+  const [isGrouped, setIsGrouped] = useState(true);
   
   // Selection & Analysis State
   const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
@@ -121,8 +129,8 @@ export default function App() {
     setShowKeyInput(false);
   };
 
-  const filteredFilings = useMemo(() => {
-    return localFilings.filter((f) => {
+  const processedFilings = useMemo(() => {
+    let results = localFilings.filter((f) => {
       const matchesSearch =
         f.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         f.sponsorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,6 +141,64 @@ export default function App() {
 
       return matchesSearch && matchesZip && matchesYear;
     });
+
+    // Apply sorting
+    results.sort((a, b) => {
+      if (sortBy === 'year') {
+        return parseInt(b.planYear) - parseInt(a.planYear);
+      } else if (sortBy === 'assets') {
+        return b.assets - a.assets;
+      } else if (sortBy === 'name') {
+        return a.planName.localeCompare(b.planName);
+      }
+      return 0;
+    });
+
+    if (isGrouped) {
+      // Group by EIN and PN (to distinguish different plans by same sponsor)
+      const groups: { [key: string]: PlanData[] } = {};
+      results.forEach(f => {
+        const key = `${f.ein}-${f.pn}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(f);
+      });
+
+      // Sort groups by the newest year of the top plan in each group
+      const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
+        const topA = groups[a][0];
+        const topB = groups[b][0];
+
+        if (sortBy === 'year') {
+          return parseInt(topB.planYear) - parseInt(topA.planYear);
+        } else if (sortBy === 'assets') {
+          return topB.assets - topA.assets;
+        } else if (sortBy === 'name') {
+          return topA.planName.localeCompare(topB.planName);
+        }
+        return 0;
+      });
+
+      return sortedGroupKeys.map(key => ({
+        key,
+        planName: groups[key][0].planName,
+        ein: groups[key][0].ein,
+        filings: groups[key]
+      }));
+    }
+
+    return results;
+  }, [localFilings, searchTerm, zipFilter, yearFilter, sortBy, isGrouped]);
+
+  const filteredFilingsCount = useMemo(() => {
+    return localFilings.filter((f) => {
+      const matchesSearch =
+        f.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        f.sponsorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        f.ein.includes(searchTerm);
+      const matchesZip = zipFilter ? f.zip.includes(zipFilter) : true;
+      const matchesYear = yearFilter ? f.planYear === yearFilter : true;
+      return matchesSearch && matchesZip && matchesYear;
+    }).length;
   }, [localFilings, searchTerm, zipFilter, yearFilter]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,6 +293,7 @@ export default function App() {
         setYearFilter={setYearFilter}
         zipFilter={zipFilter}
         setZipFilter={setZipFilter}
+        availableZips={availableZips}
         onOpenSettings={() => setShowKeyInput(true)}
         aiEnabled={aiEnabled}
         hasApiKey={!!apiKey}
@@ -255,20 +322,56 @@ export default function App() {
               ${activeTab === 'dashboard' ? 'hidden lg:flex' : 'flex'}
             `}
           >
-            <div className="p-4 border-b border-slate-50 bg-slate-50/30 flex items-center justify-between">
-              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Search Results ({filteredFilings.length})</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-              {filteredFilings.map((plan) => (
-                <CompactFilingCard
-                  key={plan.ackId}
-                  plan={plan}
-                  isSelected={selectedPlan?.ackId === plan.ackId}
-                  onSelect={handleSelectPlan}
-                />
-              ))}
+            <ListActionHeader
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              isGrouped={isGrouped}
+              setIsGrouped={setIsGrouped}
+              yearFilter={yearFilter}
+              setYearFilter={setYearFilter}
+              zipFilter={zipFilter}
+              setZipFilter={setZipFilter}
+              availableZips={availableZips}
+              totalResults={filteredFilingsCount}
+            />
 
-              {filteredFilings.length === 0 && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+              {isGrouped ? (
+                (processedFilings as any[]).map((group) => (
+                  <div key={group.key} className="space-y-2">
+                    <div className="px-2 flex items-center justify-between">
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-wider truncate mr-2">
+                        {group.planName}
+                      </h3>
+                      <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded">
+                        {group.ein}
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {group.filings.map((plan: PlanData) => (
+                        <CompactFilingCard
+                          key={plan.ackId}
+                          plan={plan}
+                          isSelected={selectedPlan?.ackId === plan.ackId}
+                          onSelect={handleSelectPlan}
+                          hidePlanName={true}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                (processedFilings as PlanData[]).map((plan) => (
+                  <CompactFilingCard
+                    key={plan.ackId}
+                    plan={plan}
+                    isSelected={selectedPlan?.ackId === plan.ackId}
+                    onSelect={handleSelectPlan}
+                  />
+                ))
+              )}
+
+              {filteredFilingsCount === 0 && (
                 <div className="text-center py-12 px-4">
                   <Database className="w-8 h-8 text-slate-200 mx-auto mb-3" />
                   <p className="text-xs text-slate-500 font-medium">No filings match your criteria.</p>
@@ -293,7 +396,15 @@ export default function App() {
               <Dashboard
                 selectedPlan={selectedPlan}
                 allPlans={localFilings}
-                filteredPlans={filteredFilings}
+                filteredPlans={localFilings.filter(f => {
+                  const matchesSearch =
+                    f.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    f.sponsorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    f.ein.includes(searchTerm);
+                  const matchesZip = zipFilter ? f.zip.includes(zipFilter) : true;
+                  const matchesYear = yearFilter ? f.planYear === yearFilter : true;
+                  return matchesSearch && matchesZip && matchesYear;
+                })}
                 onSelectYear={handleSelectPlan}
               />
             </div>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Search, LayoutDashboard, Settings, X, Database, Filter, Calendar, MapPin } from 'lucide-react';
+import { Search, LayoutDashboard, Settings, X, Database, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { FilterControls } from './FilterControls';
 
 interface SidebarProps {
   activeTab: 'analysis' | 'dashboard';
@@ -11,6 +12,7 @@ interface SidebarProps {
   setYearFilter: (year: string) => void;
   zipFilter: string;
   setZipFilter: (zip: string) => void;
+  availableZips?: string[];
   onOpenSettings: () => void;
   aiEnabled: boolean;
   hasApiKey: boolean;
@@ -25,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setYearFilter,
   zipFilter,
   setZipFilter,
+  availableZips,
   onOpenSettings,
   aiEnabled,
   hasApiKey
@@ -91,39 +94,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Filter className="w-3 h-3" />
                 Global Filters
               </div>
-              <div className="space-y-4 px-3">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3" />
-                    Filing Year
-                  </label>
-                  <select
-                    value={yearFilter}
-                    onChange={(e) => setYearFilter(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  >
-                    <option value="">All Years</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022">2022</option>
-                    <option value="2021">2021</option>
-                    <option value="2020">2020</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3" />
-                    Zip Code
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter zip..."
-                    value={zipFilter}
-                    onChange={(e) => setZipFilter(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  />
-                </div>
+              <div className="px-3">
+                <FilterControls
+                  yearFilter={yearFilter}
+                  setYearFilter={setYearFilter}
+                  zipFilter={zipFilter}
+                  setZipFilter={setZipFilter}
+                  availableZips={availableZips}
+                  layout="vertical"
+                />
               </div>
             </div>
           </nav>
