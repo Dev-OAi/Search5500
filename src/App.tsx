@@ -227,6 +227,11 @@ export default function App() {
     }).length;
   }, [localFilings, searchTerm, zipFilter, yearFilter]);
 
+  const handleMarketOverview = () => {
+    setSelectedPlan(null);
+    setActiveTab('dashboard');
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -313,6 +318,7 @@ export default function App() {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onMarketOverview={handleMarketOverview}
         isOpen={isLeftSidebarOpen}
         onClose={() => setIsLeftSidebarOpen(false)}
         yearFilter={yearFilter}
@@ -343,9 +349,9 @@ export default function App() {
           <section
             style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${listPaneWidth}px` : '100%' }}
             className={`
-              flex-1 lg:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0
+              flex-1 lg:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0 order-2 lg:order-1
               ${resizingList ? 'select-none transition-none' : ''}
-              ${activeTab === 'dashboard' ? 'hidden lg:flex' : 'flex'}
+              ${activeTab === 'dashboard' && !selectedPlan ? 'hidden lg:flex' : 'flex'}
             `}
           >
             <ListActionHeader
@@ -421,8 +427,8 @@ export default function App() {
 
           {/* Dashboard Pane */}
           <section className={`
-            flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar
-            ${activeTab === 'analysis' ? 'hidden lg:block' : 'block'}
+            flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
+            ${activeTab === 'analysis' && !selectedPlan ? 'hidden lg:block' : 'block'}
           `}>
             <div className="max-w-6xl mx-auto p-4 md:p-8">
               <Dashboard
