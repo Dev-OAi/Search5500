@@ -39,6 +39,11 @@ export default function App() {
   const [zipFilter, setZipFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
 
+  // Market Trend Filter State
+  const [trendRangeType, setTrendRangeType] = useState<'1y' | 'all' | 'custom'>('all');
+  const [trendStartDate, setTrendStartDate] = useState("2010");
+  const [trendEndDate, setTrendEndDate] = useState(new Date().getFullYear().toString());
+
   const availableZips = useMemo(() => {
     const zips = Array.from(new Set(localFilings.map(f => f.zip))).filter(Boolean).sort();
     return zips;
@@ -271,6 +276,15 @@ export default function App() {
     setActiveTab('dashboard');
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setZipFilter("");
+    setYearFilter("");
+    setTrendRangeType('all');
+    setTrendStartDate("2010");
+    setTrendEndDate(new Date().getFullYear().toString());
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -362,6 +376,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onMarketOverview={handleMarketOverview}
+        onClearFilters={handleClearFilters}
         isOpen={isLeftSidebarOpen}
         onClose={() => setIsLeftSidebarOpen(false)}
         yearFilter={yearFilter}
@@ -516,6 +531,13 @@ export default function App() {
                   return matchesSearch && matchesZip && matchesYear;
                 })}
                 onSelectYear={handleSelectPlan}
+                onClearFilters={handleClearFilters}
+                trendRangeType={trendRangeType}
+                setTrendRangeType={setTrendRangeType}
+                trendStartDate={trendStartDate}
+                setTrendStartDate={setTrendStartDate}
+                trendEndDate={trendEndDate}
+                setTrendEndDate={setTrendEndDate}
               />
             </div>
           </section>

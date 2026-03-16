@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, LayoutDashboard, Settings, X, Database, Filter, Home } from 'lucide-react';
+import { Search, LayoutDashboard, Settings, X, Database, Filter, Home, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FilterControls } from './FilterControls';
 
@@ -7,6 +7,7 @@ interface SidebarProps {
   activeTab: 'analysis' | 'dashboard';
   setActiveTab: (tab: 'analysis' | 'dashboard') => void;
   onMarketOverview: () => void;
+  onClearFilters: () => void;
   isOpen: boolean;
   onClose: () => void;
   yearFilter: string;
@@ -23,6 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
   onMarketOverview,
+  onClearFilters,
   isOpen,
   onClose,
   yearFilter,
@@ -83,9 +85,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             <div>
-              <div className="px-3 mb-3 flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <Filter className="w-3 h-3" />
-                Global Filters
+              <div className="px-3 mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <Filter className="w-3 h-3" />
+                  Global Filters
+                </div>
+                <button
+                  onClick={onClearFilters}
+                  className="text-[9px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full transition-colors"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  Clear All
+                </button>
               </div>
               <div className="px-3">
                 <FilterControls
