@@ -31,6 +31,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
         >
           <option value="">All Years</option>
+          <option value="2026">2026</option>
           <option value="2025">2025</option>
           <option value="2024">2024</option>
           <option value="2023">2023</option>
