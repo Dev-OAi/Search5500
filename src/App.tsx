@@ -36,7 +36,7 @@ export default function App() {
 
   // Filter & UI State
   const [searchTerm, setSearchTerm] = useState("");
-  const [zipFilter, setZipFilter] = useState("33432");
+  const [zipFilter, setZipFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   const [sortBy, setSortBy] = useState<'year' | 'assets' | 'name'>('year');
