@@ -12,6 +12,7 @@ interface ListActionHeaderProps {
   setYearFilter: (year: string) => void;
   zipFilter: string;
   setZipFilter: (zip: string) => void;
+  availableZips?: string[];
   totalResults: number;
 }
 
@@ -24,6 +25,7 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
   setYearFilter,
   zipFilter,
   setZipFilter,
+  availableZips,
   totalResults
 }) => {
   const [activePopover, setActivePopover] = useState<'sort' | 'group' | 'filter' | null>(null);
@@ -167,6 +169,7 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
                         setYearFilter={setYearFilter}
                         zipFilter={zipFilter}
                         setZipFilter={setZipFilter}
+                        availableZips={availableZips}
                         layout="vertical"
                       />
                     </motion.div>
@@ -184,6 +187,7 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
             setYearFilter={setYearFilter}
             zipFilter={zipFilter}
             setZipFilter={setZipFilter}
+            availableZips={availableZips}
             layout="horizontal"
           />
         </div>

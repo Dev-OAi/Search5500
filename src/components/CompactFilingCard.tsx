@@ -7,9 +7,10 @@ interface CompactFilingCardProps {
   plan: PlanData;
   isSelected: boolean;
   onSelect: (plan: PlanData) => void;
+  hidePlanName?: boolean;
 }
 
-export const CompactFilingCard: React.FC<CompactFilingCardProps> = ({ plan, isSelected, onSelect }) => {
+export const CompactFilingCard: React.FC<CompactFilingCardProps> = ({ plan, isSelected, onSelect, hidePlanName }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -30,7 +31,9 @@ export const CompactFilingCard: React.FC<CompactFilingCardProps> = ({ plan, isSe
           </span>
           <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? "rotate-90 text-emerald-500" : "text-slate-300"}`} />
         </div>
-        <h3 className="font-bold text-sm text-slate-900 line-clamp-2 leading-tight mb-1">{plan.planName}</h3>
+        {!hidePlanName && (
+          <h3 className="font-bold text-sm text-slate-900 line-clamp-2 leading-tight mb-1">{plan.planName}</h3>
+        )}
         <p className="text-[10px] text-slate-500 font-medium line-clamp-1 mb-3">{plan.sponsorName}</p>
 
         <div className="flex items-center gap-4">

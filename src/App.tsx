@@ -38,6 +38,11 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [zipFilter, setZipFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
+
+  const availableZips = useMemo(() => {
+    const zips = Array.from(new Set(localFilings.map(f => f.zip))).filter(Boolean).sort();
+    return zips;
+  }, [localFilings]);
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   const [sortBy, setSortBy] = useState<'year' | 'assets' | 'name'>('year');
   const [isGrouped, setIsGrouped] = useState(true);
@@ -288,6 +293,7 @@ export default function App() {
         setYearFilter={setYearFilter}
         zipFilter={zipFilter}
         setZipFilter={setZipFilter}
+        availableZips={availableZips}
         onOpenSettings={() => setShowKeyInput(true)}
         aiEnabled={aiEnabled}
         hasApiKey={!!apiKey}
@@ -325,6 +331,7 @@ export default function App() {
               setYearFilter={setYearFilter}
               zipFilter={zipFilter}
               setZipFilter={setZipFilter}
+              availableZips={availableZips}
               totalResults={filteredFilingsCount}
             />
 
@@ -347,6 +354,7 @@ export default function App() {
                           plan={plan}
                           isSelected={selectedPlan?.ackId === plan.ackId}
                           onSelect={handleSelectPlan}
+                          hidePlanName={true}
                         />
                       ))}
                     </div>

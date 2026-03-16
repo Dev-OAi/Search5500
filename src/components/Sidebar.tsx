@@ -12,6 +12,7 @@ interface SidebarProps {
   setYearFilter: (year: string) => void;
   zipFilter: string;
   setZipFilter: (zip: string) => void;
+  availableZips?: string[];
   onOpenSettings: () => void;
   aiEnabled: boolean;
   hasApiKey: boolean;
@@ -26,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setYearFilter,
   zipFilter,
   setZipFilter,
+  availableZips,
   onOpenSettings,
   aiEnabled,
   hasApiKey
@@ -98,6 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   setYearFilter={setYearFilter}
                   zipFilter={zipFilter}
                   setZipFilter={setZipFilter}
+                  availableZips={availableZips}
                   layout="vertical"
                 />
               </div>

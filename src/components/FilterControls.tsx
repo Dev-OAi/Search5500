@@ -6,6 +6,7 @@ interface FilterControlsProps {
   setYearFilter: (year: string) => void;
   zipFilter: string;
   setZipFilter: (zip: string) => void;
+  availableZips?: string[];
   layout?: 'vertical' | 'horizontal';
 }
 
@@ -14,6 +15,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   setYearFilter,
   zipFilter,
   setZipFilter,
+  availableZips = [],
   layout = 'vertical'
 }) => {
   const isVertical = layout === 'vertical';
@@ -21,7 +23,6 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   const years = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const startYear = 2026; // Per user request to include 2026
-    // If the system date is actually ahead of 2025, we should adjust
     const maxYear = Math.max(startYear, currentYear + 1);
     const yearList = [];
     for (let y = maxYear; y >= 2010; y--) {
@@ -54,13 +55,16 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           <MapPin className="w-3 h-3" />
           Zip Code
         </label>
-        <input
-          type="text"
-          placeholder="Enter zip..."
+        <select
           value={zipFilter}
           onChange={(e) => setZipFilter(e.target.value)}
-          className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-        />
+          className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+        >
+          <option value="">All Zip Codes</option>
+          {availableZips.map(zip => (
+            <option key={zip} value={zip}>{zip}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
