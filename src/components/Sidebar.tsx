@@ -38,10 +38,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <>
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}
-      `}>
+      <aside
+        style={{
+          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 && !isOpen ? '-256px' : '0'
+        }}
+        className={`
+          fixed lg:relative inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
         <div className="flex flex-col h-full">
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -50,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <span className="font-bold text-slate-900">Search 5500</span>
             </div>
-            <button onClick={onClose} className="lg:hidden p-2 text-slate-400 hover:text-slate-600">
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-50 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>

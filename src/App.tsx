@@ -68,6 +68,7 @@ export default function App() {
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [isListVisible, setIsListVisible] = useState(true);
 
   const [rightSidebarWidth, setRightSidebarWidth] = useState(480);
   const [listPaneWidth, setListPaneWidth] = useState(400);
@@ -111,8 +112,9 @@ export default function App() {
         }
       } else if (resizingList) {
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const sidebarWidth = isLeftSidebarOpen ? 256 : 0;
-        const newWidth = clientX - sidebarWidth;
+        // Subtract sidebar width on desktop when it's in push mode (relative)
+        const sidebarOffset = (window.innerWidth >= 1024 && isLeftSidebarOpen) ? 256 : 0;
+        const newWidth = clientX - sidebarOffset;
         if (newWidth > 280 && newWidth < window.innerWidth * 0.5) {
           setListPaneWidth(newWidth);
         }
@@ -389,29 +391,36 @@ export default function App() {
         hasApiKey={!!apiKey}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-slate-50">
         <Header
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           onToggleSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+          onToggleList={() => setIsListVisible(!isListVisible)}
           onUploadClick={() => fileInputRef.current?.click()}
           lastUpdated={lastUpdated}
           selectedPlan={selectedPlan}
           onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
           isLeftSidebarOpen={isLeftSidebarOpen}
           isRightSidebarOpen={isRightSidebarOpen}
+          isListVisible={isListVisible}
         />
 
-        <main className="flex-1 flex flex-col lg:flex-row min-w-0 overflow-hidden relative">
+        <main className="flex-1 flex flex-col md:flex-row min-w-0 overflow-hidden relative">
           {/* Filings List Pane */}
-          <section
-            style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${listPaneWidth}px` : '100%' }}
-            className={`
-              flex-1 lg:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0 order-2 lg:order-1
-              ${resizingList || resizingMobile ? 'select-none transition-none' : ''}
-              ${activeTab === 'dashboard' && !selectedPlan ? 'hidden lg:flex' : 'flex'}
-            `}
-          >
+          <AnimatePresence mode="popLayout">
+            {isListVisible && (
+              <motion.section
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? listPaneWidth : '100%', opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className={`
+                  flex-none flex flex-col bg-white border-r border-slate-200 min-h-0 order-2 md:order-1 relative overflow-hidden
+                  ${resizingList || resizingMobile ? 'select-none transition-none' : ''}
+                  ${activeTab === 'dashboard' && !selectedPlan ? 'hidden md:flex' : 'flex'}
+                `}
+              >
             {/* List Resize Handle (Mobile Vertical) */}
             <AnimatePresence>
               {selectedPlan && showMobileHandle && !isLeftSidebarOpen && (
@@ -434,90 +443,93 @@ export default function App() {
               )}
             </AnimatePresence>
 
-            <ListActionHeader
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              isGrouped={isGrouped}
-              setIsGrouped={setIsGrouped}
-              yearFilter={yearFilter}
-              setYearFilter={setYearFilter}
-              zipFilter={zipFilter}
-              setZipFilter={setZipFilter}
-              availableZips={availableZips}
-              totalResults={filteredFilingsCount}
-            />
+                <div className="flex-1 flex flex-col min-w-[280px]">
+                  <ListActionHeader
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    isGrouped={isGrouped}
+                    setIsGrouped={setIsGrouped}
+                    yearFilter={yearFilter}
+                    setYearFilter={setYearFilter}
+                    zipFilter={zipFilter}
+                    setZipFilter={setZipFilter}
+                    availableZips={availableZips}
+                    totalResults={filteredFilingsCount}
+                    onClose={() => setIsListVisible(false)}
+                  />
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-              {isGrouped ? (
-                (processedFilings as any[]).slice(0, visibleCount).map((group) => (
-                  <div key={group.key} className="space-y-2">
-                    <div className="px-2 flex items-center justify-between">
-                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-wider truncate mr-2">
-                        {group.planName}
-                      </h3>
-                      <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded">
-                        {group.ein}
-                      </span>
-                    </div>
-                    <div className="space-y-3">
-                      {group.filings.map((plan: PlanData) => (
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                    {isGrouped ? (
+                      (processedFilings as any[]).slice(0, visibleCount).map((group) => (
+                        <div key={group.key} className="space-y-2">
+                          <div className="px-2 flex items-center justify-between">
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-wider truncate mr-2">
+                              {group.planName}
+                            </h3>
+                            <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded">
+                              {group.ein}
+                            </span>
+                          </div>
+                          <div className="space-y-3">
+                            {group.filings.map((plan: PlanData) => (
+                              <CompactFilingCard
+                                key={plan.ackId}
+                                plan={plan}
+                                isSelected={selectedPlan?.ackId === plan.ackId}
+                                onSelect={handleSelectPlan}
+                                hidePlanName={true}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      (processedFilings as PlanData[]).slice(0, visibleCount).map((plan) => (
                         <CompactFilingCard
                           key={plan.ackId}
                           plan={plan}
                           isSelected={selectedPlan?.ackId === plan.ackId}
                           onSelect={handleSelectPlan}
-                          hidePlanName={true}
                         />
-                      ))}
-                    </div>
+                      ))
+                    )}
+
+                    {processedFilings.length > visibleCount && (
+                      <div ref={loadMoreRef} className="py-8 flex justify-center">
+                        <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+                      </div>
+                    )}
+
+                    {filteredFilingsCount === 0 && (
+                      <div className="text-center py-12 px-4">
+                        <Database className="w-8 h-8 text-slate-200 mx-auto mb-3" />
+                        <p className="text-xs text-slate-500 font-medium">No filings match your criteria.</p>
+                      </div>
+                    )}
                   </div>
-                ))
-              ) : (
-                (processedFilings as PlanData[]).slice(0, visibleCount).map((plan) => (
-                  <CompactFilingCard
-                    key={plan.ackId}
-                    plan={plan}
-                    isSelected={selectedPlan?.ackId === plan.ackId}
-                    onSelect={handleSelectPlan}
-                  />
-                ))
-              )}
-
-              {processedFilings.length > visibleCount && (
-                <div ref={loadMoreRef} className="py-8 flex justify-center">
-                  <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
                 </div>
-              )}
 
-              {filteredFilingsCount === 0 && (
-                <div className="text-center py-12 px-4">
-                  <Database className="w-8 h-8 text-slate-200 mx-auto mb-3" />
-                  <p className="text-xs text-slate-500 font-medium">No filings match your criteria.</p>
-                </div>
-              )}
-            </div>
-
-            {/* List Resize Handle (Desktop) */}
-            <div
-              onMouseDown={startResizingList}
-              onTouchStart={startResizingList}
-              className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-10 hidden lg:block"
-            />
-
-          </section>
+                {/* List Resize Handle (Desktop) */}
+                <div
+                  onMouseDown={startResizingList}
+                  onTouchStart={startResizingList}
+                  className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-10 hidden md:block"
+                />
+              </motion.section>
+            )}
+          </AnimatePresence>
 
           {/* Dashboard Pane */}
           <section
-            style={{ height: typeof window !== 'undefined' && window.innerWidth < 1024 && selectedPlan ? `${mobileDashboardHeight}px` : 'auto' }}
+            style={{ height: typeof window !== 'undefined' && window.innerWidth < 768 && selectedPlan ? `${mobileDashboardHeight}px` : 'auto' }}
             className={`
-              overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
-              ${activeTab === 'analysis' && !selectedPlan ? 'hidden lg:block' : 'block'}
-              ${resizingMobile ? 'select-none flex-none transition-none' : 'flex-1'}
-              ${selectedPlan ? 'flex-none lg:flex-1' : ''}
-              lg:!h-auto
+              overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 md:order-2 flex-1
+              ${activeTab === 'analysis' && !selectedPlan ? 'hidden md:block' : 'block'}
+              ${resizingMobile ? 'select-none transition-none' : ''}
+              md:!h-auto
             `}
           >
-            <div className="max-w-6xl mx-auto p-4 md:p-8 lg:h-full">
+            <div className="max-w-6xl mx-auto p-4 md:p-6 h-full">
               <Dashboard
                 selectedPlan={selectedPlan}
                 allPlans={localFilings}
