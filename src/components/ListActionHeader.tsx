@@ -94,7 +94,9 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
               <button
                 onClick={() => togglePopover('group')}
                 className={`p-2 rounded-lg border transition-all flex items-center gap-2 text-xs font-bold ${
-                  activePopover === 'group' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                  isGrouped || activePopover === 'group'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -110,7 +112,7 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
                     >
-                      <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">
+                      <div className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">
                         Grouping
                       </div>
                       <button
