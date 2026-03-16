@@ -362,7 +362,7 @@ export default function App() {
             style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${listPaneWidth}px` : '100%' }}
             className={`
               flex-1 lg:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0 order-2 lg:order-1
-              ${resizingList ? 'select-none transition-none' : ''}
+              ${resizingList || resizingMobile ? 'select-none transition-none' : ''}
               ${activeTab === 'dashboard' && !selectedPlan ? 'hidden lg:flex' : 'flex'}
             `}
           >
@@ -371,9 +371,9 @@ export default function App() {
               <div
                 onMouseDown={startResizingMobile}
                 onTouchStart={startResizingMobile}
-                className="lg:hidden h-2 bg-slate-50 border-b border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-40"
+                className="lg:hidden h-4 bg-slate-50 border-b border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-40 touch-none"
               >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-emerald-600 rounded-b-xl w-16 h-4 shadow-md flex items-center justify-center border border-emerald-500 border-t-0">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-emerald-600 rounded-b-xl w-16 h-4 shadow-md flex items-center justify-center border border-emerald-500 border-t-0 pointer-events-none">
                   <div className="flex gap-1">
                     {[1, 2, 3].map(i => (
                       <div key={i} className="w-1 h-1 bg-white/60 rounded-full shadow-sm" />
@@ -459,9 +459,10 @@ export default function App() {
           <section
             style={{ height: typeof window !== 'undefined' && window.innerWidth < 1024 && selectedPlan ? `${mobileDashboardHeight}px` : 'auto' }}
             className={`
-              flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
+              overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
               ${activeTab === 'analysis' && !selectedPlan ? 'hidden lg:block' : 'block'}
-              ${resizingMobile ? 'select-none' : ''}
+              ${resizingMobile ? 'select-none flex-none transition-none' : 'flex-1'}
+              ${selectedPlan ? 'flex-none lg:flex-1' : ''}
               lg:!h-auto
             `}
           >
