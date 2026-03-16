@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Calendar, MapPin } from 'lucide-react';
 
 interface FilterControlsProps {
@@ -18,6 +18,18 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
 }) => {
   const isVertical = layout === 'vertical';
 
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2026; // Per user request to include 2026
+    // If the system date is actually ahead of 2025, we should adjust
+    const maxYear = Math.max(startYear, currentYear + 1);
+    const yearList = [];
+    for (let y = maxYear; y >= 2010; y--) {
+      yearList.push(y.toString());
+    }
+    return yearList;
+  }, []);
+
   return (
     <div className={`flex ${isVertical ? 'flex-col space-y-4' : 'flex-row items-center gap-4'}`}>
       <div className={`space-y-1.5 ${isVertical ? 'w-full' : 'w-32'}`}>
@@ -31,13 +43,9 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
         >
           <option value="">All Years</option>
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-          <option value="2022">2022</option>
-          <option value="2021">2021</option>
-          <option value="2020">2020</option>
+          {years.map(year => (
+            <option key={year} value={year}>{year}</option>
+          ))}
         </select>
       </div>
 
