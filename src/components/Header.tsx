@@ -6,33 +6,29 @@ interface HeaderProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   onToggleSidebar: () => void;
-  onToggleList: () => void;
   onUploadClick: () => void;
   lastUpdated: string | null;
   selectedPlan: any;
   onToggleRightSidebar: () => void;
   isLeftSidebarOpen: boolean;
   isRightSidebarOpen: boolean;
-  isListVisible: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   searchTerm,
   setSearchTerm,
   onToggleSidebar,
-  onToggleList,
   onUploadClick,
   lastUpdated,
   selectedPlan,
   onToggleRightSidebar,
   isLeftSidebarOpen,
-  isRightSidebarOpen,
-  isListVisible
+  isRightSidebarOpen
 }) => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
       <div className="max-w-[1920px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
             className={`p-2 -ml-2 rounded-lg transition-colors ${
@@ -40,21 +36,8 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'text-emerald-600 bg-emerald-50'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
             }`}
-            title="Toggle Navigation"
           >
             <Menu className="w-6 h-6" />
-          </button>
-
-          <button
-            onClick={onToggleList}
-            className={`p-2 rounded-lg transition-colors hidden md:block ${
-              isListVisible
-                ? 'text-emerald-600 bg-emerald-50'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-            }`}
-            title="Toggle Filings List"
-          >
-            <Search className="w-5 h-5" />
           </button>
 
           <div className="hidden sm:block">

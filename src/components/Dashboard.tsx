@@ -116,12 +116,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   if (!selectedPlan) {
     return (
-      <div className="space-y-4 animate-in fade-in duration-500">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Market Overview</h1>
-              <p className="text-[11px] text-slate-500 font-medium">Summary of all filings in current view</p>
+              <h1 className="text-2xl font-bold text-slate-900">Market Overview</h1>
+              <p className="text-sm text-slate-500 font-medium">Summary of all filings in current view</p>
             </div>
             <button
               onClick={onClearFilters}
@@ -137,33 +137,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Total Net Assets</p>
-            <p className="text-xl font-bold text-slate-900">${(globalStats.totalAssets / 1000000000).toFixed(2)}B</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Total Net Assets</p>
+            <p className="text-2xl font-bold text-slate-900">${(globalStats.totalAssets / 1000000000).toFixed(2)}B</p>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Total Participants</p>
-            <p className="text-xl font-bold text-slate-900">{globalStats.totalParticipants.toLocaleString()}</p>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Total Participants</p>
+            <p className="text-2xl font-bold text-slate-900">{globalStats.totalParticipants.toLocaleString()}</p>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Avg. Asset Growth</p>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Avg. Asset Growth</p>
             <div className="flex items-center gap-2">
-              <p className={`text-xl font-bold ${globalStats.avgGrowth >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <p className={`text-2xl font-bold ${globalStats.avgGrowth >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                 {globalStats.avgGrowth.toFixed(1)}%
               </p>
-              <TrendingUp className={`w-4 h-4 ${globalStats.avgGrowth >= 0 ? 'text-emerald-500' : 'text-red-500 rotate-180'}`} />
+              <TrendingUp className={`w-5 h-5 ${globalStats.avgGrowth >= 0 ? 'text-emerald-500' : 'text-red-500 rotate-180'}`} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-slate-100 rounded-lg">
-                <TrendingUp className="w-3.5 h-3.5 text-slate-600" />
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <TrendingUp className="w-4 h-4 text-slate-600" />
               </div>
-              <h3 className="font-bold text-xs text-slate-800 uppercase tracking-tight">Aggregated Market Trend</h3>
+              <h3 className="font-bold text-sm text-slate-800 uppercase tracking-tight">Aggregated Market Trend</h3>
             </div>
 
             <div className="flex items-center gap-3">
@@ -271,88 +271,88 @@ export const Dashboard: React.FC<DashboardProps> = ({
   }
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-500 pb-8">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       {/* Plan Header Section */}
-      <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 md:p-6 flex gap-3">
+      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 md:p-8 flex gap-3">
            <div className="text-right">
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Plan Year</p>
-              <span className="text-lg md:text-xl font-black text-emerald-600">{selectedPlan.planYear}</span>
+              <span className="text-xl md:text-2xl font-black text-emerald-600">{selectedPlan.planYear}</span>
            </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-start gap-5 max-w-3xl">
-          <div className="bg-emerald-600 p-3 rounded-xl shadow-lg shadow-emerald-200 shrink-0">
-            <FileText className="w-6 h-6 text-white" />
+        <div className="flex flex-col md:flex-row items-start gap-6 max-w-3xl">
+          <div className="bg-emerald-600 p-4 rounded-2xl shadow-lg shadow-emerald-200 shrink-0">
+            <FileText className="w-8 h-8 text-white" />
           </div>
-          <div className="space-y-1.5 pr-16 md:pr-0">
-            <h1 className="text-lg md:text-xl font-black text-slate-900 leading-tight break-words">{selectedPlan.planName}</h1>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-xs text-slate-500 font-medium">
-              <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" /> {selectedPlan.sponsorName}</span>
-              <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {selectedPlan.city}, {selectedPlan.state}</span>
+          <div className="space-y-2 pr-16 md:pr-0">
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight break-words">{selectedPlan.planName}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-500 font-medium">
+              <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4" /> {selectedPlan.sponsorName}</span>
+              <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {selectedPlan.city}, {selectedPlan.state}</span>
             </div>
-            <div className="flex items-center gap-5 pt-3">
+            <div className="flex items-center gap-6 pt-4">
               <div>
-                <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">EIN / Plan No.</p>
-                <p className="text-xs font-bold text-slate-700">{selectedPlan.ein} / {selectedPlan.pn}</p>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">EIN / Plan No.</p>
+                <p className="text-sm font-bold text-slate-700">{selectedPlan.ein} / {selectedPlan.pn}</p>
               </div>
               <div>
-                <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Type</p>
-                <p className="text-xs font-bold text-slate-700">{selectedPlan.planType || '401(k) Profit Sharing'}</p>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Type</p>
+                <p className="text-sm font-bold text-slate-700">{selectedPlan.planType || '401(k) Profit Sharing'}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex gap-3 border-t border-slate-50 pt-5">
+        <div className="mt-8 flex gap-3 border-t border-slate-50 pt-6">
           <a
             href={selectedPlan.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all active:scale-95"
           >
-            View Official Filing PDF <ExternalLink className="w-3.5 h-3.5" />
+            View Official Filing PDF <ExternalLink className="w-4 h-4" />
           </a>
         </div>
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Total Assets</p>
-          <p className="text-xl font-bold text-slate-900">${(selectedPlan.assets / 1000000).toFixed(2)}M</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Total Assets</p>
+          <p className="text-2xl font-bold text-slate-900">${(selectedPlan.assets / 1000000).toFixed(2)}M</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Participants</p>
-          <p className="text-xl font-bold text-slate-900">{selectedPlan.participantsEoy.toLocaleString()}</p>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Participants</p>
+          <p className="text-2xl font-bold text-slate-900">{selectedPlan.participantsEoy.toLocaleString()}</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Asset Growth</p>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Asset Growth</p>
           <div className="flex items-center gap-2">
-            <p className={`text-xl font-bold ${selectedPlan.assets >= selectedPlan.assetsBoy ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`text-2xl font-bold ${selectedPlan.assets >= selectedPlan.assetsBoy ? 'text-emerald-600' : 'text-red-600'}`}>
               {(((selectedPlan.assets - selectedPlan.assetsBoy) / (selectedPlan.assetsBoy || 1)) * 100).toFixed(1)}%
             </p>
-            <TrendingUp className={`w-4 h-4 ${selectedPlan.assets >= selectedPlan.assetsBoy ? 'text-emerald-500' : 'text-red-500 rotate-180'}`} />
+            <TrendingUp className={`w-5 h-5 ${selectedPlan.assets >= selectedPlan.assetsBoy ? 'text-emerald-500' : 'text-red-500 rotate-180'}`} />
           </div>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Assets per Cap</p>
-          <p className="text-xl font-bold text-slate-900">${(selectedPlan.assets / (selectedPlan.participantsEoy || 1) / 1000).toFixed(1)}K</p>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Assets per Cap</p>
+          <p className="text-2xl font-bold text-slate-900">${(selectedPlan.assets / (selectedPlan.participantsEoy || 1) / 1000).toFixed(1)}K</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Filing History Table */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:col-span-2">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:col-span-2">
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-slate-100 rounded-lg">
-                <FileText className="w-3.5 h-3.5 text-slate-600" />
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <FileText className="w-4 h-4 text-slate-600" />
               </div>
-              <h3 className="font-bold text-xs text-slate-800 uppercase tracking-tight">Filing History</h3>
+              <h3 className="font-bold text-sm text-slate-800 uppercase tracking-tight">Filing History</h3>
             </div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full">
-              {trendData.length} Records
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
+              {trendData.length} Records Found
             </span>
           </div>
 
@@ -360,11 +360,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50">
-                  <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Year</th>
-                  <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Assets</th>
-                  <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Participants</th>
-                  <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Growth</th>
-                  <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Year</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Assets</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Participants</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Growth</th>
+                  <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -412,12 +412,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
         {/* Asset Trend Chart */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 bg-emerald-100 rounded-lg">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 bg-emerald-100 rounded-lg">
+              <TrendingUp className="w-4 h-4 text-emerald-600" />
             </div>
-            <h3 className="font-bold text-xs text-slate-800 uppercase tracking-tight">Financial Growth Trend</h3>
+            <h3 className="font-bold text-sm text-slate-800 uppercase tracking-tight">Financial Growth Trend</h3>
           </div>
           
           <div className="h-[250px] w-full">
@@ -443,12 +443,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Participant Trend Chart */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 bg-blue-100 rounded-lg">
-              <Users className="w-3.5 h-3.5 text-blue-600" />
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Users className="w-4 h-4 text-blue-600" />
             </div>
-            <h3 className="font-bold text-xs text-slate-800 uppercase tracking-tight">Participant Engagement</h3>
+            <h3 className="font-bold text-sm text-slate-800 uppercase tracking-tight">Participant Engagement</h3>
           </div>
           
           <div className="h-[250px] w-full">
