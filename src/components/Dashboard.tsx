@@ -145,21 +145,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans, fi
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       {/* Plan Header Section */}
-      <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 flex gap-3">
+      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 md:p-8 flex gap-3">
            <div className="text-right">
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Plan Year</p>
-              <span className="text-2xl font-black text-emerald-600">{selectedPlan.planYear}</span>
+              <span className="text-xl md:text-2xl font-black text-emerald-600">{selectedPlan.planYear}</span>
            </div>
         </div>
 
-        <div className="flex items-start gap-6 max-w-3xl">
+        <div className="flex flex-col md:flex-row items-start gap-6 max-w-3xl">
           <div className="bg-emerald-600 p-4 rounded-2xl shadow-lg shadow-emerald-200 shrink-0">
             <FileText className="w-8 h-8 text-white" />
           </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-black text-slate-900 leading-tight">{selectedPlan.planName}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 font-medium">
+          <div className="space-y-2 pr-16 md:pr-0">
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight break-words">{selectedPlan.planName}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-500 font-medium">
               <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4" /> {selectedPlan.sponsorName}</span>
               <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {selectedPlan.city}, {selectedPlan.state}</span>
             </div>
