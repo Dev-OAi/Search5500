@@ -154,7 +154,7 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-20"
+                      className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-50"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
