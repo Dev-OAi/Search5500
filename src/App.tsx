@@ -332,7 +332,11 @@ export default function App() {
     setShowDeepAnalysisInput(false);
     setIsAnalyzing(false);
     setHasRequestedAnalysis(false);
-    setIsRightSidebarOpen(true);
+
+    // Only auto-open on desktop
+    if (window.innerWidth >= 1024) {
+      setIsRightSidebarOpen(true);
+    }
   };
 
   const handleGenerateAnalysis = async () => {

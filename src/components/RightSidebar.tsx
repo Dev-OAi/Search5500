@@ -53,18 +53,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
   return (
     <>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
-          />
-        )}
-      </AnimatePresence>
-
       <aside
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${width}px` : '85%' }}
         className={`
