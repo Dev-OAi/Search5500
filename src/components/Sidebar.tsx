@@ -36,18 +36,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
-          />
-        )}
-      </AnimatePresence>
-
       <aside className={`
         fixed lg:static inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}
