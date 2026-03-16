@@ -111,8 +111,8 @@ export default function App() {
         }
       } else if (resizingList) {
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const sidebarWidth = isLeftSidebarOpen ? 256 : 0;
-        const newWidth = clientX - sidebarWidth;
+        // Sidebar is now fixed overlay, so it doesn't shift the list's starting point
+        const newWidth = clientX;
         if (newWidth > 280 && newWidth < window.innerWidth * 0.5) {
           setListPaneWidth(newWidth);
         }
@@ -402,14 +402,14 @@ export default function App() {
           isRightSidebarOpen={isRightSidebarOpen}
         />
 
-        <main className="flex-1 flex flex-col lg:flex-row min-w-0 overflow-hidden relative">
+        <main className="flex-1 flex flex-col md:flex-row min-w-0 overflow-hidden relative">
           {/* Filings List Pane */}
           <section
-            style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${listPaneWidth}px` : '100%' }}
+            style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${listPaneWidth}px` : '100%' }}
             className={`
-              flex-1 lg:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0 order-2 lg:order-1
+              flex-1 md:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0 order-2 md:order-1
               ${resizingList || resizingMobile ? 'select-none transition-none' : ''}
-              ${activeTab === 'dashboard' && !selectedPlan ? 'hidden lg:flex' : 'flex'}
+              ${activeTab === 'dashboard' && !selectedPlan ? 'hidden md:flex' : 'flex'}
             `}
           >
             {/* List Resize Handle (Mobile Vertical) */}
@@ -508,16 +508,16 @@ export default function App() {
 
           {/* Dashboard Pane */}
           <section
-            style={{ height: typeof window !== 'undefined' && window.innerWidth < 1024 && selectedPlan ? `${mobileDashboardHeight}px` : 'auto' }}
+            style={{ height: typeof window !== 'undefined' && window.innerWidth < 768 && selectedPlan ? `${mobileDashboardHeight}px` : 'auto' }}
             className={`
-              overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
-              ${activeTab === 'analysis' && !selectedPlan ? 'hidden lg:block' : 'block'}
+              overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 md:order-2
+              ${activeTab === 'analysis' && !selectedPlan ? 'hidden md:block' : 'block'}
               ${resizingMobile ? 'select-none flex-none transition-none' : 'flex-1'}
-              ${selectedPlan ? 'flex-none lg:flex-1' : ''}
-              lg:!h-auto
+              ${selectedPlan ? 'flex-none md:flex-1' : ''}
+              md:!h-auto
             `}
           >
-            <div className="max-w-6xl mx-auto p-4 md:p-8 lg:h-full">
+            <div className="max-w-6xl mx-auto p-4 md:p-6 lg:h-full">
               <Dashboard
                 selectedPlan={selectedPlan}
                 allPlans={localFilings}
