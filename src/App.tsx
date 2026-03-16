@@ -40,7 +40,7 @@ export default function App() {
   const [yearFilter, setYearFilter] = useState("");
 
   // Market Trend Filter State
-  const [trendRangeType, setTrendRangeType] = useState<'1y' | 'all' | 'custom'>('all');
+  const [trendRangeType, setTrendRangeType] = useState<'1y' | '3y' | '5y' | 'all' | 'custom'>('all');
   const [trendStartDate, setTrendStartDate] = useState("2010");
   const [trendEndDate, setTrendEndDate] = useState(new Date().getFullYear().toString());
 

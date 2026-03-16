@@ -14,8 +14,8 @@ interface DashboardProps {
   filteredPlans: PlanData[]; // Filtered set for Market Overview
   onSelectYear: (plan: PlanData) => void;
   onClearFilters: () => void;
-  trendRangeType: '1y' | 'all' | 'custom';
-  setTrendRangeType: (type: '1y' | 'all' | 'custom') => void;
+  trendRangeType: '1y' | '3y' | '5y' | 'all' | 'custom';
+  setTrendRangeType: (type: '1y' | '3y' | '5y' | 'all' | 'custom') => void;
   trendStartDate: string;
   setTrendStartDate: (date: string) => void;
   trendEndDate: string;
@@ -59,6 +59,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     if (trendRangeType === '1y' && allYears.length > 0) {
       filteredYears = [allYears[allYears.length - 1]];
+    } else if (trendRangeType === '3y' && allYears.length > 0) {
+      filteredYears = allYears.slice(-3);
+    } else if (trendRangeType === '5y' && allYears.length > 0) {
+      filteredYears = allYears.slice(-5);
     } else if (trendRangeType === 'custom') {
       filteredYears = allYears.filter(y => y >= trendStartDate && y <= trendEndDate);
     }
@@ -164,7 +168,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <div className="flex items-center gap-3">
               <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
-                {(['all', '1y', 'custom'] as const).map((type) => (
+                {(['1y', '3y', '5y', 'custom', 'all'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setTrendRangeType(type)}
@@ -174,7 +178,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         : 'text-slate-400 hover:text-slate-600'
                     }`}
                   >
-                    {type === '1y' ? '1 Year' : type === 'all' ? 'All' : 'Custom'}
+                    {type === '1y' ? '1 Year' :
+                     type === '3y' ? '3 Year' :
+                     type === '5y' ? '5 Year' :
+                     type === 'all' ? 'All' : 'Custom'}
                   </button>
                 ))}
               </div>
