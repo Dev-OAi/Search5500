@@ -70,6 +70,7 @@ export default function App() {
   const [resizingRight, setResizingRight] = useState(false);
   const [resizingList, setResizingList] = useState(false);
   const [resizingMobile, setResizingMobile] = useState(false);
+  const [showMobileHandle, setShowMobileHandle] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,6 +86,7 @@ export default function App() {
 
   const startResizingMobile = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
     setResizingMobile(true);
+    setShowMobileHandle(true);
     e.preventDefault();
   }, []);
 
@@ -227,6 +229,31 @@ export default function App() {
     return () => observer.disconnect();
   }, [processedFilings]);
 
+  // Mobile Handle Auto-hide Logic
+  useEffect(() => {
+    if (!selectedPlan) return;
+
+    let timeout: NodeJS.Timeout;
+    const handleInteraction = () => {
+      setShowMobileHandle(true);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (!resizingMobile) setShowMobileHandle(false);
+      }, 3000);
+    };
+
+    window.addEventListener('touchstart', handleInteraction);
+    window.addEventListener('mousemove', handleInteraction);
+
+    handleInteraction();
+
+    return () => {
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('mousemove', handleInteraction);
+      clearTimeout(timeout);
+    };
+  }, [selectedPlan, resizingMobile]);
+
   const filteredFilingsCount = useMemo(() => {
     return localFilings.filter((f) => {
       const matchesSearch =
@@ -367,21 +394,26 @@ export default function App() {
             `}
           >
             {/* List Resize Handle (Mobile Vertical) */}
-            {selectedPlan && (
-              <div
-                onMouseDown={startResizingMobile}
-                onTouchStart={startResizingMobile}
-                className="lg:hidden h-4 bg-slate-50 border-b border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-40 touch-none"
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-emerald-600 rounded-b-xl w-16 h-4 shadow-md flex items-center justify-center border border-emerald-500 border-t-0 pointer-events-none">
-                  <div className="flex gap-1">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-1 h-1 bg-white/60 rounded-full shadow-sm" />
-                    ))}
+            <AnimatePresence>
+              {selectedPlan && showMobileHandle && !isLeftSidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  onMouseDown={startResizingMobile}
+                  onTouchStart={startResizingMobile}
+                  className="lg:hidden h-4 bg-slate-50 border-b border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-40 touch-none"
+                >
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-emerald-600 rounded-b-xl w-16 h-4 shadow-md flex items-center justify-center border border-emerald-500 border-t-0 pointer-events-none">
+                    <div className="flex gap-1">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="w-1 h-1 bg-white/60 rounded-full shadow-sm" />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <ListActionHeader
               sortBy={sortBy}
