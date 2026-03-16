@@ -56,8 +56,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       <aside
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${width}px` : '85%' }}
         className={`
-          fixed lg:static inset-y-0 right-0 bg-white border-l border-slate-200 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0
-          ${isOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'}
+          fixed inset-y-0 right-0 bg-white border-l border-slate-200 z-50 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none
+          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
           ${isResizing ? 'select-none transition-none' : ''}
         `}
       >

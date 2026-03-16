@@ -39,8 +39,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       <aside className={`
-        fixed lg:static inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}
+        fixed inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex flex-col h-full">
           <div className="p-6 flex items-center justify-between">
