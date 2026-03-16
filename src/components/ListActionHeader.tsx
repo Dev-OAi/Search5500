@@ -14,7 +14,6 @@ interface ListActionHeaderProps {
   setZipFilter: (zip: string) => void;
   availableZips?: string[];
   totalResults: number;
-  onClose?: () => void;
 }
 
 export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
@@ -27,8 +26,7 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
   zipFilter,
   setZipFilter,
   availableZips,
-  totalResults,
-  onClose
+  totalResults
 }) => {
   const [activePopover, setActivePopover] = useState<'sort' | 'group' | 'filter' | null>(null);
 
@@ -40,19 +38,9 @@ export const ListActionHeader: React.FC<ListActionHeaderProps> = ({
     <div className="bg-white border-b border-slate-200">
       <div className="p-4 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-              Search Results ({totalResults})
-            </h2>
-            {onClose && (
-              <button
-                onClick={onClose}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded hover:bg-slate-50 transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+          <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+            Search Results ({totalResults})
+          </h2>
           <div className="flex items-center gap-2">
             {/* Sort Button */}
             <div className="relative">
