@@ -1,11 +1,12 @@
 import React from 'react';
-import { Search, LayoutDashboard, Settings, X, Database, Filter } from 'lucide-react';
+import { Search, LayoutDashboard, Settings, X, Database, Filter, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FilterControls } from './FilterControls';
 
 interface SidebarProps {
   activeTab: 'analysis' | 'dashboard';
   setActiveTab: (tab: 'analysis' | 'dashboard') => void;
+  onMarketOverview: () => void;
   isOpen: boolean;
   onClose: () => void;
   yearFilter: string;
@@ -21,6 +22,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
+  onMarketOverview,
   isOpen,
   onClose,
   yearFilter,
@@ -66,6 +68,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <nav className="flex-1 px-4 space-y-6">
             <div className="space-y-1">
               <button
+                onClick={() => { onMarketOverview(); if(window.innerWidth < 1024) onClose(); }}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  activeTab === 'dashboard'
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                Market Overview
+              </button>
+
+              <div className="h-px bg-slate-100 mx-3 my-4" />
+
+              <button
                 onClick={() => { setActiveTab('analysis'); if(window.innerWidth < 1024) onClose(); }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'analysis'
@@ -75,17 +91,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <Search className="w-4 h-4" />
                 Search & Filings
-              </button>
-              <button
-                onClick={() => { setActiveTab('dashboard'); if(window.innerWidth < 1024) onClose(); }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                  activeTab === 'dashboard'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
               </button>
             </div>
 
