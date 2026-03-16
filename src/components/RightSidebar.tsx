@@ -81,9 +81,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           title="Drag to resize"
         >
           {/* Visual Handle Tab */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-1 opacity-100 lg:opacity-0 lg:group-hover/resize:opacity-100 transition-opacity">
-            <div className="bg-white border border-slate-200 border-r-0 rounded-l-xl p-2.5 shadow-[-4px_0_10px_rgba(0,0,0,0.05)] flex items-center justify-center">
-              <GripVertical className="w-4 h-4 text-slate-400" />
+          <div className="absolute left-0 top-24 -translate-x-full pr-1 opacity-100 lg:opacity-0 lg:group-hover/resize:opacity-100 transition-opacity">
+            <div className="bg-emerald-600 rounded-l-xl p-2.5 shadow-[-4px_0_10px_rgba(0,0,0,0.1)] flex items-center justify-center border border-emerald-500 border-r-0">
+              <GripVertical className="w-4 h-4 text-white" />
             </div>
           </div>
         </div>

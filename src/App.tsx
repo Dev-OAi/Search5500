@@ -441,9 +441,15 @@ export default function App() {
               <div
                 onMouseDown={startResizingMobile}
                 onTouchStart={startResizingMobile}
-                className="lg:hidden h-1.5 bg-slate-100 cursor-row-resize hover:bg-emerald-500/30 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-20"
+                className="lg:hidden h-2 bg-slate-50 border-y border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-20"
               >
-                <div className="w-12 h-1 bg-slate-300 rounded-full group-hover/mobile-resize:bg-emerald-400 transition-colors" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-emerald-600 rounded-full w-16 h-4 shadow-sm flex items-center justify-center border border-emerald-500">
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-1 h-1 bg-white/50 rounded-full" />
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </section>
