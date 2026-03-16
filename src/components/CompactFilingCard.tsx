@@ -19,31 +19,31 @@ export const CompactFilingCard: React.FC<CompactFilingCardProps> = ({ plan, isSe
         onClick={() => onSelect(plan)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`w-full text-left p-4 rounded-2xl border transition-all relative z-20 ${
+        className={`w-full text-left p-3.5 rounded-xl border transition-all relative z-20 ${
           isSelected
             ? "bg-emerald-50 border-emerald-500 shadow-sm"
             : "bg-white border-slate-100 hover:border-emerald-200 hover:bg-slate-50/50"
         }`}
       >
-        <div className="flex justify-between items-start mb-2">
+        <div className="flex justify-between items-start mb-1.5">
           <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full uppercase">
             {plan.planYear}
           </span>
-          <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? "rotate-90 text-emerald-500" : "text-slate-300"}`} />
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? "rotate-90 text-emerald-500" : "text-slate-300"}`} />
         </div>
         {!hidePlanName && (
-          <h3 className="font-bold text-sm text-slate-900 line-clamp-2 leading-tight mb-1">{plan.planName}</h3>
+          <h3 className="font-bold text-xs text-slate-900 line-clamp-2 leading-tight mb-0.5">{plan.planName}</h3>
         )}
-        <p className="text-[10px] text-slate-500 font-medium line-clamp-1 mb-3">{plan.sponsorName}</p>
+        <p className="text-[10px] text-slate-500 font-medium line-clamp-1 mb-2">{plan.sponsorName}</p>
 
-        <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
-          <div className="min-w-[60px]">
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
+          <div className="min-w-[50px]">
             <p className="text-[8px] text-slate-400 font-black uppercase tracking-tighter">Assets</p>
-            <p className="text-xs font-bold text-slate-700">${(plan.assets / 1000000).toFixed(1)}M</p>
+            <p className="text-[11px] font-bold text-slate-700">${(plan.assets / 1000000).toFixed(1)}M</p>
           </div>
-          <div className="min-w-[60px]">
+          <div className="min-w-[50px]">
             <p className="text-[8px] text-slate-400 font-black uppercase tracking-tighter">Participants</p>
-            <p className="text-xs font-bold text-slate-700">{plan.participantsEoy.toLocaleString()}</p>
+            <p className="text-[11px] font-bold text-slate-700">{plan.participantsEoy.toLocaleString()}</p>
           </div>
         </div>
       </button>
