@@ -45,7 +45,7 @@ export default function App() {
   }, [localFilings]);
   const [activeTab, setActiveTab] = useState<"analysis" | "dashboard">("analysis");
   const [sortBy, setSortBy] = useState<'year' | 'assets' | 'name'>('year');
-  const [isGrouped, setIsGrouped] = useState(true);
+  const [isGrouped, setIsGrouped] = useState(false);
   
   // Selection & Analysis State
   const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
