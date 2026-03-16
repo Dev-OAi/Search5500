@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Database, BarChart2, Loader2, FileUp, FileText, AlertCircle, Sparkles } from 'lucide-react';
+import { X, Database, BarChart2, Loader2, FileUp, FileText, AlertCircle, Sparkles, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { PlanData, PlanAnalysis, DeepAnalysis } from '../types';
@@ -66,7 +66,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       </AnimatePresence>
 
       <aside
-        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${width}px` : '100%' }}
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${width}px` : '85%' }}
         className={`
           fixed lg:static inset-y-0 right-0 bg-white border-l border-slate-200 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0
           ${isOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'}
@@ -77,9 +77,16 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         <div
           onMouseDown={onResizeStart}
           onTouchStart={onResizeStart}
-          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-50 hidden lg:block"
+          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-50 hidden lg:block group/resize"
           title="Drag to resize"
-        />
+        >
+          {/* Visual Handle Tab */}
+          <div className="absolute left-0 top-24 -translate-x-full pr-1 opacity-100 lg:opacity-0 lg:group-hover/resize:opacity-100 transition-opacity">
+            <div className="bg-emerald-600 rounded-l-xl p-2.5 shadow-[-4px_0_10px_rgba(0,0,0,0.1)] flex items-center justify-center border border-emerald-500 border-r-0">
+              <GripVertical className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
 
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
