@@ -366,6 +366,23 @@ export default function App() {
               ${activeTab === 'dashboard' && !selectedPlan ? 'hidden lg:flex' : 'flex'}
             `}
           >
+            {/* List Resize Handle (Mobile Vertical) */}
+            {selectedPlan && (
+              <div
+                onMouseDown={startResizingMobile}
+                onTouchStart={startResizingMobile}
+                className="lg:hidden h-2 bg-slate-50 border-b border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-40"
+              >
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-emerald-600 rounded-b-xl w-16 h-4 shadow-md flex items-center justify-center border border-emerald-500 border-t-0">
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-1 h-1 bg-white/60 rounded-full shadow-sm" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <ListActionHeader
               sortBy={sortBy}
               setSortBy={setSortBy}
@@ -436,22 +453,6 @@ export default function App() {
               className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-10 hidden lg:block"
             />
 
-            {/* List Resize Handle (Mobile Vertical) */}
-            {selectedPlan && (
-              <div
-                onMouseDown={startResizingMobile}
-                onTouchStart={startResizingMobile}
-                className="lg:hidden h-2 bg-slate-50 border-y border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-20"
-              >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-emerald-600 rounded-full w-16 h-4 shadow-sm flex items-center justify-center border border-emerald-500">
-                  <div className="flex gap-1">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-1 h-1 bg-white/50 rounded-full" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
           </section>
 
           {/* Dashboard Pane */}
