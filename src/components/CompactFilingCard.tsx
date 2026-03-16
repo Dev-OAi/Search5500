@@ -36,12 +36,12 @@ export const CompactFilingCard: React.FC<CompactFilingCardProps> = ({ plan, isSe
         )}
         <p className="text-[10px] text-slate-500 font-medium line-clamp-1 mb-3">{plan.sponsorName}</p>
 
-        <div className="flex items-center gap-4">
-          <div>
+        <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
+          <div className="min-w-[60px]">
             <p className="text-[8px] text-slate-400 font-black uppercase tracking-tighter">Assets</p>
             <p className="text-xs font-bold text-slate-700">${(plan.assets / 1000000).toFixed(1)}M</p>
           </div>
-          <div>
+          <div className="min-w-[60px]">
             <p className="text-[8px] text-slate-400 font-black uppercase tracking-tighter">Participants</p>
             <p className="text-xs font-bold text-slate-700">{plan.participantsEoy.toLocaleString()}</p>
           </div>
