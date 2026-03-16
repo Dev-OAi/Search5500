@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Search, ChevronRight, Upload, X, Database, Loader2, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Papa from "papaparse";
@@ -63,6 +63,7 @@ export default function App() {
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+
   const [rightSidebarWidth, setRightSidebarWidth] = useState(480);
   const [listPaneWidth, setListPaneWidth] = useState(400);
   const [resizingRight, setResizingRight] = useState(false);
@@ -188,6 +189,31 @@ export default function App() {
 
     return results;
   }, [localFilings, searchTerm, zipFilter, yearFilter, sortBy, isGrouped]);
+
+  // Lazy Loading State
+  const [visibleCount, setVisibleCount] = useState(20);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [searchTerm, zipFilter, yearFilter, sortBy, isGrouped]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + 20);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [processedFilings]);
 
   const filteredFilingsCount = useMemo(() => {
     return localFilings.filter((f) => {
@@ -317,7 +343,7 @@ export default function App() {
           <section
             style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${listPaneWidth}px` : '100%' }}
             className={`
-              flex-shrink-0 flex flex-col bg-white border-r border-slate-200 transition-all
+              flex-1 lg:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0
               ${resizingList ? 'select-none transition-none' : ''}
               ${activeTab === 'dashboard' ? 'hidden lg:flex' : 'flex'}
             `}
@@ -337,7 +363,7 @@ export default function App() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
               {isGrouped ? (
-                (processedFilings as any[]).map((group) => (
+                (processedFilings as any[]).slice(0, visibleCount).map((group) => (
                   <div key={group.key} className="space-y-2">
                     <div className="px-2 flex items-center justify-between">
                       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-wider truncate mr-2">
@@ -361,7 +387,7 @@ export default function App() {
                   </div>
                 ))
               ) : (
-                (processedFilings as PlanData[]).map((plan) => (
+                (processedFilings as PlanData[]).slice(0, visibleCount).map((plan) => (
                   <CompactFilingCard
                     key={plan.ackId}
                     plan={plan}
@@ -369,6 +395,12 @@ export default function App() {
                     onSelect={handleSelectPlan}
                   />
                 ))
+              )}
+
+              {processedFilings.length > visibleCount && (
+                <div ref={loadMoreRef} className="py-8 flex justify-center">
+                  <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+                </div>
               )}
 
               {filteredFilingsCount === 0 && (
