@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   BarChart, Bar, Legend, Cell, AreaChart, Area
 } from 'recharts';
 import { PlanData } from '../types';
-import { TrendingUp, Users, DollarSign, PieChart, FileText, ExternalLink, MapPin, Building2, Activity, Globe } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, PieChart, FileText, ExternalLink, MapPin, Building2, Activity, Globe, RotateCcw, Calendar, ChevronDown } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { FilingModel } from '../models/FilingModel';
 
 interface DashboardProps {
@@ -12,9 +13,30 @@ interface DashboardProps {
   allPlans: PlanData[]; // Full database for history/trends
   filteredPlans: PlanData[]; // Filtered set for Market Overview
   onSelectYear: (plan: PlanData) => void;
+  onClearFilters: () => void;
+  trendRangeType: '1y' | 'all' | 'custom';
+  setTrendRangeType: (type: '1y' | 'all' | 'custom') => void;
+  trendStartDate: string;
+  setTrendStartDate: (date: string) => void;
+  trendEndDate: string;
+  setTrendEndDate: (date: string) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans, filteredPlans, onSelectYear }) => {
+export const Dashboard: React.FC<DashboardProps> = ({
+  selectedPlan,
+  allPlans,
+  filteredPlans,
+  onSelectYear,
+  onClearFilters,
+  trendRangeType,
+  setTrendRangeType,
+  trendStartDate,
+  setTrendStartDate,
+  trendEndDate,
+  setTrendEndDate
+}) => {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   // Global stats when no plan is selected
   const globalStats = useMemo(() => {
     const totalAssets = filteredPlans.reduce((sum, p) => sum + p.assets, 0);
@@ -32,7 +54,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans, fi
       return acc;
     }, {});
 
-    const globalTrend = Object.keys(yearGroups).sort().map(year => ({
+    const allYears = Object.keys(yearGroups).sort();
+    let filteredYears = allYears;
+
+    if (trendRangeType === '1y' && allYears.length > 0) {
+      filteredYears = [allYears[allYears.length - 1]];
+    } else if (trendRangeType === 'custom') {
+      filteredYears = allYears.filter(y => y >= trendStartDate && y <= trendEndDate);
+    }
+
+    const globalTrend = filteredYears.map(year => ({
       year,
       assets: yearGroups[year].assets,
       participants: yearGroups[year].participants,
@@ -83,9 +114,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans, fi
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Market Overview</h1>
-            <p className="text-sm text-slate-500 font-medium">Summary of all filings in current view</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Market Overview</h1>
+              <p className="text-sm text-slate-500 font-medium">Summary of all filings in current view</p>
+            </div>
+            <button
+              onClick={onClearFilters}
+              className="mt-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-full transition-all border border-emerald-100"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Reset All
+            </button>
           </div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">
             <Activity className="w-3.5 h-3.5" />
@@ -114,11 +154,92 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans, fi
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <TrendingUp className="w-4 h-4 text-slate-600" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <TrendingUp className="w-4 h-4 text-slate-600" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-800 uppercase tracking-tight">Aggregated Market Trend</h3>
             </div>
-            <h3 className="font-bold text-sm text-slate-800 uppercase tracking-tight">Aggregated Market Trend</h3>
+
+            <div className="flex items-center gap-3">
+              <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
+                {(['all', '1y', 'custom'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setTrendRangeType(type)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                      trendRangeType === type
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    {type === '1y' ? '1 Year' : type === 'all' ? 'All' : 'Custom'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className={`p-2 rounded-xl border transition-all ${
+                    trendRangeType === 'custom' || showDatePicker
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                      : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300'
+                  }`}
+                >
+                  <Calendar className="w-4 h-4" />
+                </button>
+
+                <AnimatePresence>
+                  {showDatePicker && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowDatePicker(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 p-5 z-20"
+                      >
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Custom Date Range</h4>
+                        <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-slate-500 uppercase">Start Year</label>
+                            <select
+                              value={trendStartDate}
+                              onChange={(e) => { setTrendStartDate(e.target.value); setTrendRangeType('custom'); }}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            >
+                              {Array.from({ length: 16 }, (_, i) => (2010 + i).toString()).map(y => (
+                                <option key={y} value={y}>{y}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-slate-500 uppercase">End Year</label>
+                            <select
+                              value={trendEndDate}
+                              onChange={(e) => { setTrendEndDate(e.target.value); setTrendRangeType('custom'); }}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            >
+                              {Array.from({ length: 17 }, (_, i) => (2010 + i).toString()).reverse().map(y => (
+                                <option key={y} value={y}>{y}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <button
+                            onClick={() => setShowDatePicker(false)}
+                            className="w-full py-2 bg-emerald-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors mt-2"
+                          >
+                            Apply Range
+                          </button>
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -145,21 +266,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedPlan, allPlans, fi
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       {/* Plan Header Section */}
-      <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 flex gap-3">
+      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 md:p-8 flex gap-3">
            <div className="text-right">
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Plan Year</p>
-              <span className="text-2xl font-black text-emerald-600">{selectedPlan.planYear}</span>
+              <span className="text-xl md:text-2xl font-black text-emerald-600">{selectedPlan.planYear}</span>
            </div>
         </div>
 
-        <div className="flex items-start gap-6 max-w-3xl">
+        <div className="flex flex-col md:flex-row items-start gap-6 max-w-3xl">
           <div className="bg-emerald-600 p-4 rounded-2xl shadow-lg shadow-emerald-200 shrink-0">
             <FileText className="w-8 h-8 text-white" />
           </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-black text-slate-900 leading-tight">{selectedPlan.planName}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 font-medium">
+          <div className="space-y-2 pr-16 md:pr-0">
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight break-words">{selectedPlan.planName}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-500 font-medium">
               <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4" /> {selectedPlan.sponsorName}</span>
               <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {selectedPlan.city}, {selectedPlan.state}</span>
             </div>

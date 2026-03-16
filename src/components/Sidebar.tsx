@@ -1,11 +1,13 @@
 import React from 'react';
-import { Search, LayoutDashboard, Settings, X, Database, Filter } from 'lucide-react';
+import { Search, LayoutDashboard, Settings, X, Database, Filter, Home, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FilterControls } from './FilterControls';
 
 interface SidebarProps {
   activeTab: 'analysis' | 'dashboard';
   setActiveTab: (tab: 'analysis' | 'dashboard') => void;
+  onMarketOverview: () => void;
+  onClearFilters: () => void;
   isOpen: boolean;
   onClose: () => void;
   yearFilter: string;
@@ -21,6 +23,8 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
+  onMarketOverview,
+  onClearFilters,
   isOpen,
   onClose,
   yearFilter,
@@ -34,18 +38,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
-          />
-        )}
-      </AnimatePresence>
-
       <aside className={`
         fixed lg:static inset-y-0 left-0 bg-white border-r border-slate-200 w-64 z-50 transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}
@@ -66,6 +58,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <nav className="flex-1 px-4 space-y-6">
             <div className="space-y-1">
               <button
+                onClick={() => { onMarketOverview(); if(window.innerWidth < 1024) onClose(); }}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  activeTab === 'dashboard'
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                Market Overview
+              </button>
+
+              <div className="h-px bg-slate-100 mx-3 my-4" />
+
+              <button
                 onClick={() => { setActiveTab('analysis'); if(window.innerWidth < 1024) onClose(); }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'analysis'
@@ -76,23 +82,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Search className="w-4 h-4" />
                 Search & Filings
               </button>
-              <button
-                onClick={() => { setActiveTab('dashboard'); if(window.innerWidth < 1024) onClose(); }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                  activeTab === 'dashboard'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </button>
             </div>
 
             <div>
-              <div className="px-3 mb-3 flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <Filter className="w-3 h-3" />
-                Global Filters
+              <div className="px-3 mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <Filter className="w-3 h-3" />
+                  Global Filters
+                </div>
+                <button
+                  onClick={onClearFilters}
+                  className="text-[9px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full transition-colors"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  Clear All
+                </button>
               </div>
               <div className="px-3">
                 <FilterControls
