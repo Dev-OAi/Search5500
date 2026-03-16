@@ -66,8 +66,10 @@ export default function App() {
 
   const [rightSidebarWidth, setRightSidebarWidth] = useState(480);
   const [listPaneWidth, setListPaneWidth] = useState(400);
+  const [mobileDashboardHeight, setMobileDashboardHeight] = useState(320);
   const [resizingRight, setResizingRight] = useState(false);
   const [resizingList, setResizingList] = useState(false);
+  const [resizingMobile, setResizingMobile] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,9 +83,15 @@ export default function App() {
     e.preventDefault();
   }, []);
 
+  const startResizingMobile = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setResizingMobile(true);
+    e.preventDefault();
+  }, []);
+
   const stopResizing = React.useCallback(() => {
     setResizingRight(false);
     setResizingList(false);
+    setResizingMobile(false);
   }, []);
 
   const resize = React.useCallback(
@@ -96,17 +104,21 @@ export default function App() {
         }
       } else if (resizingList) {
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        // The list pane starts after the left sidebar (64px = 256px if open)
-        // Actually it's easier to use the mouse movement delta or just relative to window
-        // But let's assume left sidebar is static 256px when open on desktop
         const sidebarWidth = isLeftSidebarOpen ? 256 : 0;
         const newWidth = clientX - sidebarWidth;
         if (newWidth > 280 && newWidth < window.innerWidth * 0.5) {
           setListPaneWidth(newWidth);
         }
+      } else if (resizingMobile) {
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        // Header height is 64px
+        const newHeight = clientY - 64;
+        if (newHeight > 160 && newHeight < window.innerHeight * 0.7) {
+          setMobileDashboardHeight(newHeight);
+        }
       }
     },
-    [resizingRight, resizingList, isLeftSidebarOpen]
+    [resizingRight, resizingList, resizingMobile, isLeftSidebarOpen]
   );
 
   React.useEffect(() => {
@@ -417,20 +429,36 @@ export default function App() {
               )}
             </div>
 
-            {/* List Resize Handle */}
+            {/* List Resize Handle (Desktop) */}
             <div
               onMouseDown={startResizingList}
               onTouchStart={startResizingList}
               className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-10 hidden lg:block"
             />
+
+            {/* List Resize Handle (Mobile Vertical) */}
+            {selectedPlan && (
+              <div
+                onMouseDown={startResizingMobile}
+                onTouchStart={startResizingMobile}
+                className="lg:hidden h-1.5 bg-slate-100 cursor-row-resize hover:bg-emerald-500/30 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-20"
+              >
+                <div className="w-12 h-1 bg-slate-300 rounded-full group-hover/mobile-resize:bg-emerald-400 transition-colors" />
+              </div>
+            )}
           </section>
 
           {/* Dashboard Pane */}
-          <section className={`
-            flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
-            ${activeTab === 'analysis' && !selectedPlan ? 'hidden lg:block' : 'block'}
-          `}>
-            <div className="max-w-6xl mx-auto p-4 md:p-8">
+          <section
+            style={{ height: typeof window !== 'undefined' && window.innerWidth < 1024 && selectedPlan ? `${mobileDashboardHeight}px` : 'auto' }}
+            className={`
+              flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
+              ${activeTab === 'analysis' && !selectedPlan ? 'hidden lg:block' : 'block'}
+              ${resizingMobile ? 'select-none' : ''}
+              lg:!h-auto
+            `}
+          >
+            <div className="max-w-6xl mx-auto p-4 md:p-8 lg:h-full">
               <Dashboard
                 selectedPlan={selectedPlan}
                 allPlans={localFilings}
