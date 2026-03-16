@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Search, ChevronRight, Upload, X, Database, Loader2, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Papa from "papaparse";
@@ -63,10 +63,14 @@ export default function App() {
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+
   const [rightSidebarWidth, setRightSidebarWidth] = useState(480);
   const [listPaneWidth, setListPaneWidth] = useState(400);
+  const [mobileDashboardHeight, setMobileDashboardHeight] = useState(320);
   const [resizingRight, setResizingRight] = useState(false);
   const [resizingList, setResizingList] = useState(false);
+  const [resizingMobile, setResizingMobile] = useState(false);
+  const [showMobileHandle, setShowMobileHandle] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,9 +84,16 @@ export default function App() {
     e.preventDefault();
   }, []);
 
+  const startResizingMobile = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setResizingMobile(true);
+    setShowMobileHandle(true);
+    e.preventDefault();
+  }, []);
+
   const stopResizing = React.useCallback(() => {
     setResizingRight(false);
     setResizingList(false);
+    setResizingMobile(false);
   }, []);
 
   const resize = React.useCallback(
@@ -95,17 +106,21 @@ export default function App() {
         }
       } else if (resizingList) {
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        // The list pane starts after the left sidebar (64px = 256px if open)
-        // Actually it's easier to use the mouse movement delta or just relative to window
-        // But let's assume left sidebar is static 256px when open on desktop
         const sidebarWidth = isLeftSidebarOpen ? 256 : 0;
         const newWidth = clientX - sidebarWidth;
         if (newWidth > 280 && newWidth < window.innerWidth * 0.5) {
           setListPaneWidth(newWidth);
         }
+      } else if (resizingMobile) {
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        // Header height is 64px
+        const newHeight = clientY - 64;
+        if (newHeight > 160 && newHeight < window.innerHeight * 0.7) {
+          setMobileDashboardHeight(newHeight);
+        }
       }
     },
-    [resizingRight, resizingList, isLeftSidebarOpen]
+    [resizingRight, resizingList, resizingMobile, isLeftSidebarOpen]
   );
 
   React.useEffect(() => {
@@ -189,6 +204,56 @@ export default function App() {
     return results;
   }, [localFilings, searchTerm, zipFilter, yearFilter, sortBy, isGrouped]);
 
+  // Lazy Loading State
+  const [visibleCount, setVisibleCount] = useState(20);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [searchTerm, zipFilter, yearFilter, sortBy, isGrouped]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + 20);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [processedFilings]);
+
+  // Mobile Handle Auto-hide Logic
+  useEffect(() => {
+    if (!selectedPlan) return;
+
+    let timeout: NodeJS.Timeout;
+    const handleInteraction = () => {
+      setShowMobileHandle(true);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (!resizingMobile) setShowMobileHandle(false);
+      }, 3000);
+    };
+
+    window.addEventListener('touchstart', handleInteraction);
+    window.addEventListener('mousemove', handleInteraction);
+
+    handleInteraction();
+
+    return () => {
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('mousemove', handleInteraction);
+      clearTimeout(timeout);
+    };
+  }, [selectedPlan, resizingMobile]);
+
   const filteredFilingsCount = useMemo(() => {
     return localFilings.filter((f) => {
       const matchesSearch =
@@ -200,6 +265,11 @@ export default function App() {
       return matchesSearch && matchesZip && matchesYear;
     }).length;
   }, [localFilings, searchTerm, zipFilter, yearFilter]);
+
+  const handleMarketOverview = () => {
+    setSelectedPlan(null);
+    setActiveTab('dashboard');
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -287,6 +357,7 @@ export default function App() {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onMarketOverview={handleMarketOverview}
         isOpen={isLeftSidebarOpen}
         onClose={() => setIsLeftSidebarOpen(false)}
         yearFilter={yearFilter}
@@ -317,11 +388,33 @@ export default function App() {
           <section
             style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${listPaneWidth}px` : '100%' }}
             className={`
-              flex-shrink-0 flex flex-col bg-white border-r border-slate-200 transition-all
-              ${resizingList ? 'select-none transition-none' : ''}
-              ${activeTab === 'dashboard' ? 'hidden lg:flex' : 'flex'}
+              flex-1 lg:flex-none flex flex-col bg-white border-r border-slate-200 transition-all min-h-0 order-2 lg:order-1
+              ${resizingList || resizingMobile ? 'select-none transition-none' : ''}
+              ${activeTab === 'dashboard' && !selectedPlan ? 'hidden lg:flex' : 'flex'}
             `}
           >
+            {/* List Resize Handle (Mobile Vertical) */}
+            <AnimatePresence>
+              {selectedPlan && showMobileHandle && !isLeftSidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  onMouseDown={startResizingMobile}
+                  onTouchStart={startResizingMobile}
+                  className="lg:hidden h-4 bg-slate-50 border-b border-slate-100 cursor-row-resize hover:bg-emerald-50 transition-colors flex items-center justify-center group/mobile-resize sticky top-0 z-40 touch-none"
+                >
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-emerald-600 rounded-b-xl w-16 h-4 shadow-md flex items-center justify-center border border-emerald-500 border-t-0 pointer-events-none">
+                    <div className="flex gap-1">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="w-1 h-1 bg-white/60 rounded-full shadow-sm" />
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <ListActionHeader
               sortBy={sortBy}
               setSortBy={setSortBy}
@@ -337,7 +430,7 @@ export default function App() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
               {isGrouped ? (
-                (processedFilings as any[]).map((group) => (
+                (processedFilings as any[]).slice(0, visibleCount).map((group) => (
                   <div key={group.key} className="space-y-2">
                     <div className="px-2 flex items-center justify-between">
                       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-wider truncate mr-2">
@@ -361,7 +454,7 @@ export default function App() {
                   </div>
                 ))
               ) : (
-                (processedFilings as PlanData[]).map((plan) => (
+                (processedFilings as PlanData[]).slice(0, visibleCount).map((plan) => (
                   <CompactFilingCard
                     key={plan.ackId}
                     plan={plan}
@@ -369,6 +462,12 @@ export default function App() {
                     onSelect={handleSelectPlan}
                   />
                 ))
+              )}
+
+              {processedFilings.length > visibleCount && (
+                <div ref={loadMoreRef} className="py-8 flex justify-center">
+                  <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+                </div>
               )}
 
               {filteredFilingsCount === 0 && (
@@ -379,20 +478,27 @@ export default function App() {
               )}
             </div>
 
-            {/* List Resize Handle */}
+            {/* List Resize Handle (Desktop) */}
             <div
               onMouseDown={startResizingList}
               onTouchStart={startResizingList}
               className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500/30 transition-colors z-10 hidden lg:block"
             />
+
           </section>
 
           {/* Dashboard Pane */}
-          <section className={`
-            flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar
-            ${activeTab === 'analysis' ? 'hidden lg:block' : 'block'}
-          `}>
-            <div className="max-w-6xl mx-auto p-4 md:p-8">
+          <section
+            style={{ height: typeof window !== 'undefined' && window.innerWidth < 1024 && selectedPlan ? `${mobileDashboardHeight}px` : 'auto' }}
+            className={`
+              overflow-y-auto bg-slate-50/50 custom-scrollbar order-1 lg:order-2
+              ${activeTab === 'analysis' && !selectedPlan ? 'hidden lg:block' : 'block'}
+              ${resizingMobile ? 'select-none flex-none transition-none' : 'flex-1'}
+              ${selectedPlan ? 'flex-none lg:flex-1' : ''}
+              lg:!h-auto
+            `}
+          >
+            <div className="max-w-6xl mx-auto p-4 md:p-8 lg:h-full">
               <Dashboard
                 selectedPlan={selectedPlan}
                 allPlans={localFilings}
